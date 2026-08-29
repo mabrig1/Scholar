@@ -1,5 +1,13 @@
 const workspaces = [
   {
+    eyebrow: "REVIEW",
+    title: "Chapter Two Research Studio",
+    description:
+      "Find DOI-registered articles, verify source metadata, build conceptual and theoretical frameworks, and synthesize previous studies.",
+    href: "/chapter-two",
+    action: "Build a literature review",
+  },
+  {
     eyebrow: "ANALYZE",
     title: "Chapter Four Data Lab",
     description:
@@ -36,6 +44,7 @@ const workspaces = [
 const trustPoints = [
   "Meaning-preserving rewriting",
   "No invented citations",
+  "DOI-registered literature search",
   "Evidence-aware journal guidance",
   "Downloadable Word documents",
   "Up to 100-page service submissions",
@@ -52,6 +61,7 @@ export default function ResearcherProHome() {
         </a>
         <nav className="actions" aria-label="Primary navigation">
           <a className="btn secondary" href="/workspace">Workspace</a>
+          <a className="btn secondary" href="/chapter-two">Review</a>
           <a className="btn secondary" href="/chapter-four">Analyze</a>
           <a className="btn secondary" href="/formatter">Format</a>
           <a className="btn secondary" href="/publishing-agent">Publish</a>
@@ -65,7 +75,7 @@ export default function ResearcherProHome() {
           <div className="container researcher-hero-grid">
             <div>
               <span className="badge">ONE RESEARCH WORKSPACE • GLOBAL SUPPORT</span>
-              <h1>Research. Analyze. Format. Publish—with confidence.</h1>
+              <h1>Research. Review. Analyze. Format. Publish—with confidence.</h1>
               <p className="lead">
                 Mabrig Researcher Pro brings publishing intelligence, DocForge document formatting and professional academic assistance into one responsible research platform.
               </p>
@@ -78,6 +88,7 @@ export default function ResearcherProHome() {
               <span>RESEARCHER COMMAND CENTRE</span>
               <ol>
                 <li><strong>Prepare</strong><small>Rewrite, humanize and structure</small></li>
+                <li><strong>Review</strong><small>Verify sources and synthesize literature</small></li>
                 <li><strong>Analyze</strong><small>Build Chapter Four tables and findings</small></li>
                 <li><strong>Format</strong><small>Apply institutional or journal style</small></li>
                 <li><strong>Audit</strong><small>Check citations and readiness</small></li>
