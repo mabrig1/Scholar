@@ -1,6 +1,10 @@
 export const dynamic = "force-dynamic";
 
-export default function AdminConverterPage() {
+type FormatterPageProps = { searchParams: Promise<{ title?: string }> };
+
+export default async function FormatterPage({ searchParams }: FormatterPageProps) {
+  const params = await searchParams;
+  const workspaceTitle = String(params.title || "").trim().slice(0, 200);
   const aiConfigured = Boolean(
     process.env.AI_API_KEY?.trim() &&
     process.env.AI_BASE_URL?.trim() &&
@@ -32,7 +36,7 @@ export default function AdminConverterPage() {
             <div className="form-grid">
               <label className="field">
                 <span>Document title</span>
-                <input name="title" placeholder="e.g. Political Science Assignment" defaultValue="Academic Document" />
+                <input name="title" placeholder="e.g. Political Science Assignment" defaultValue={workspaceTitle || "Academic Document"} />
               </label>
               <label className="field">
                 <span>Student name (optional)</span>

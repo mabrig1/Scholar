@@ -13,6 +13,7 @@ The original repositories remain independent. This repository is the consolidate
 | Route | Purpose |
 | --- | --- |
 | `/` | Unified Researcher Pro landing page |
+| `/workspace` | Persistent browser-based manuscript profile and guided workflow |
 | `/formatter` | Public DocForge formatting and Word export studio |
 | `/publishing-agent` | Manuscript-specific publishing pathway |
 | `/free-journals` | Evidence-aware journal directory |
@@ -20,6 +21,9 @@ The original repositories remain independent. This repository is the consolidate
 | `/academic-support` | Academic assistance and service ordering |
 | `/academic-printing/order` | Document upload, instructions, pricing and payment flow |
 | `/track` | Client order tracking and follow-up instructions |
+| `/pricing` | Transparent self-service and human-assisted plans |
+| `/trust` | Research integrity, journal evidence, privacy and oversight commitments |
+| `/privacy`, `/terms` | Public privacy notice and terms of use |
 | `/admin` | Protected operations dashboard |
 | `/admin/submission-readiness` | Submission readiness gate |
 | `/admin/journal-matrix` | Multi-journal comparison |
@@ -57,6 +61,7 @@ The deterministic journal and formatting tools remain useful when optional AI pr
 
 ```bash
 npm run typecheck
+npm test
 npm run build
 ```
 

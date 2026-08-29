@@ -1,6 +1,11 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
+import {
+  normalizeResearchWorkspace,
+  RESEARCH_WORKSPACE_STORAGE_KEY,
+  workspacePublishingPrefill,
+} from "@/lib/research-workspace";
 import styles from "./agent.module.css";
 
 type Check = { label: string; passed: boolean; weight: number };
@@ -46,6 +51,17 @@ export default function PublishingAgentClient() {
   const [result, setResult] = useState<AgentResult | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    try {
+      const stored = window.localStorage.getItem(RESEARCH_WORKSPACE_STORAGE_KEY);
+      if (!stored) return;
+      const prefill = workspacePublishingPrefill(normalizeResearchWorkspace(JSON.parse(stored)));
+      setForm((current) => current.title || current.abstract ? current : { ...current, ...prefill });
+    } catch {
+      window.localStorage.removeItem(RESEARCH_WORKSPACE_STORAGE_KEY);
+    }
+  }, []);
 
   function setField(name: keyof typeof blankForm, value: string) {
     setForm((current) => ({ ...current, [name]: value }));
@@ -111,6 +127,7 @@ export default function PublishingAgentClient() {
       <header className={styles.topbar}>
         <a href="/" className={styles.brand}>Mabrig <strong>Researcher Pro</strong></a>
         <nav className={styles.toplinks} aria-label="Publishing tools">
+          <a href="/workspace">My workspace</a>
           <a href="/free-journals">Verified journals</a>
           <a href="/scopus-journals">Scopus journals</a>
           <a className={styles.active} href="/publishing-agent">Publishing agent</a>
@@ -129,7 +146,7 @@ export default function PublishingAgentClient() {
       <section className={styles.workspace}>
         <div className={styles.formIntro}>
           <div><span className={styles.eyebrow}>START THE AGENT</span><h2>Describe the article and set your cost ceiling</h2></div>
-          <p>No manuscript upload is required. Your title and abstract are enough for the first pathway; always review the output against the full paper.</p>
+          <p>Your saved manuscript workspace prefills this form automatically. No upload is required for the first pathway; always review the output against the full paper.</p>
         </div>
 
         <form className={styles.form} onSubmit={runAgent}>

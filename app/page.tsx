@@ -43,10 +43,11 @@ export default function ResearcherProHome() {
           <strong>Mabrig Researcher Pro</strong>
         </a>
         <nav className="actions" aria-label="Primary navigation">
+          <a className="btn secondary" href="/workspace">Workspace</a>
           <a className="btn secondary" href="/formatter">Format</a>
           <a className="btn secondary" href="/publishing-agent">Publish</a>
-          <a className="btn secondary" href="/academic-support">Academic Support</a>
-          <a className="btn primary" href="/academic-printing/order">Submit Work</a>
+          <a className="btn secondary" href="/pricing">Pricing</a>
+          <a className="btn primary" href="/academic-printing/order">Human Support</a>
         </nav>
       </header>
 
@@ -60,7 +61,7 @@ export default function ResearcherProHome() {
                 Mabrig Researcher Pro brings publishing intelligence, DocForge document formatting and professional academic assistance into one responsible research platform.
               </p>
               <div className="actions">
-                <a className="btn primary" href="/formatter">Start with my document</a>
+                <a className="btn primary" href="/workspace">Create my manuscript workspace</a>
                 <a className="btn secondary" href="/publishing-agent">Find my publishing pathway</a>
               </div>
             </div>
@@ -125,7 +126,7 @@ export default function ResearcherProHome() {
       <footer className="footer">
         <div className="container researcher-footer">
           <strong>Mabrig Researcher Pro</strong>
-          <span>Publishing intelligence • DocForge formatting • Academic assistance</span>
+          <span><a href="/pricing">Pricing</a> • <a href="/trust">Trust</a> • <a href="/privacy">Privacy</a> • <a href="/terms">Terms</a></span>
         </div>
       </footer>
     </>

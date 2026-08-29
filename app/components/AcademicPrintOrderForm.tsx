@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useEffect, useState } from "react";
+import { normalizeResearchWorkspace, RESEARCH_WORKSPACE_STORAGE_KEY } from "@/lib/research-workspace";
 
 const MAX_PAGES = 100;
 const MAX_FILE_BYTES = 4_000_000;
@@ -26,6 +27,7 @@ export default function AcademicPrintOrderForm({ compact = false }: { compact?: 
   const [transformationMode, setTransformationMode] = useState("format");
   const [referralCode, setReferralCode] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [documentTitle, setDocumentTitle] = useState("");
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -35,6 +37,12 @@ export default function AcademicPrintOrderForm({ compact = false }: { compact?: 
     if (code) {
       setReferralCode(code);
       window.sessionStorage.setItem("mabrig_referral_code", code);
+    }
+    try {
+      const storedWorkspace = window.localStorage.getItem(RESEARCH_WORKSPACE_STORAGE_KEY);
+      if (storedWorkspace) setDocumentTitle(normalizeResearchWorkspace(JSON.parse(storedWorkspace)).title);
+    } catch {
+      window.localStorage.removeItem(RESEARCH_WORKSPACE_STORAGE_KEY);
     }
   }, []);
 
@@ -73,6 +81,7 @@ export default function AcademicPrintOrderForm({ compact = false }: { compact?: 
     setPrintOption("DIGITAL_AND_PRINT");
     setPages(1);
     setTransformationMode("format");
+    setDocumentTitle("");
   }
 
   const humanizeMode = transformationMode === "rewrite-assignment";
@@ -89,7 +98,7 @@ export default function AcademicPrintOrderForm({ compact = false }: { compact?: 
         <label className="field"><span>Name</span><input name="name" required placeholder="Your name" /></label>
         <label className="field"><span>WhatsApp number</span><input name="whatsapp" required inputMode="tel" placeholder="080..." /></label>
 
-        <label className="field full"><span>Document title / assignment topic</span><input name="documentTitle" required={transformationMode === "write-assignment"} maxLength={200} placeholder="e.g. The Impact of E-Governance on Service Delivery" /></label>
+        <label className="field full"><span>Document title / assignment topic</span><input name="documentTitle" value={documentTitle} onChange={(event) => setDocumentTitle(event.target.value)} required={transformationMode === "write-assignment"} maxLength={200} placeholder="e.g. The Impact of E-Governance on Service Delivery" /></label>
 
         <label className="field"><span>Document / service</span>
           <select name="service" defaultValue="Academic Document Printing" required>
