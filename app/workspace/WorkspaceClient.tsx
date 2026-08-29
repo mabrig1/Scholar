@@ -64,7 +64,7 @@ export default function WorkspaceClient() {
         <div className="container">
           <span className="badge">PRIVATE ON THIS DEVICE</span>
           <h1>Your manuscript command centre.</h1>
-          <p className="lead">Enter the research details once. Researcher Pro carries them into formatting, publishing intelligence and professional assistance.</p>
+          <p className="lead">Enter the research details once. Researcher Pro carries them into data analysis, formatting, publishing intelligence and professional assistance.</p>
         </div>
       </section>
 
@@ -95,6 +95,7 @@ export default function WorkspaceClient() {
           <article className="card workspace-next-card">
             <span className="badge">CONTINUE</span>
             <h2>Choose the next action</h2>
+            <button type="button" onClick={() => continueTo("/chapter-four")}><strong>Analyze Chapter Four data</strong><small>Generate tables, tests and editable interpretations.</small></button>
             <button type="button" onClick={() => continueTo("/formatter")}><strong>Format with DocForge</strong><small>Create a structured Word document.</small></button>
             <button type="button" onClick={() => continueTo("/publishing-agent")}><strong>Build a publishing pathway</strong><small>Prefill the journal-matching agent.</small></button>
             <button type="button" onClick={() => continueTo("/academic-printing/order")}><strong>Request human assistance</strong><small>Submit the work and special instructions.</small></button>

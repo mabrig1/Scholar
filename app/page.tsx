@@ -1,5 +1,13 @@
 const workspaces = [
   {
+    eyebrow: "ANALYZE",
+    title: "Chapter Four Data Lab",
+    description:
+      "Analyze CSV data with descriptive statistics, Likert summaries, reliability, correlation, chi-square and regression, then export to Word.",
+    href: "/chapter-four",
+    action: "Analyze thesis data",
+  },
+  {
     eyebrow: "PUBLISH",
     title: "Publishing Intelligence",
     description:
@@ -44,6 +52,7 @@ export default function ResearcherProHome() {
         </a>
         <nav className="actions" aria-label="Primary navigation">
           <a className="btn secondary" href="/workspace">Workspace</a>
+          <a className="btn secondary" href="/chapter-four">Analyze</a>
           <a className="btn secondary" href="/formatter">Format</a>
           <a className="btn secondary" href="/publishing-agent">Publish</a>
           <a className="btn secondary" href="/pricing">Pricing</a>
@@ -56,7 +65,7 @@ export default function ResearcherProHome() {
           <div className="container researcher-hero-grid">
             <div>
               <span className="badge">ONE RESEARCH WORKSPACE • GLOBAL SUPPORT</span>
-              <h1>Research. Format. Publish—with confidence.</h1>
+              <h1>Research. Analyze. Format. Publish—with confidence.</h1>
               <p className="lead">
                 Mabrig Researcher Pro brings publishing intelligence, DocForge document formatting and professional academic assistance into one responsible research platform.
               </p>
@@ -69,6 +78,7 @@ export default function ResearcherProHome() {
               <span>RESEARCHER COMMAND CENTRE</span>
               <ol>
                 <li><strong>Prepare</strong><small>Rewrite, humanize and structure</small></li>
+                <li><strong>Analyze</strong><small>Build Chapter Four tables and findings</small></li>
                 <li><strong>Format</strong><small>Apply institutional or journal style</small></li>
                 <li><strong>Audit</strong><small>Check citations and readiness</small></li>
                 <li><strong>Submit</strong><small>Follow a journal-specific pathway</small></li>
@@ -79,7 +89,7 @@ export default function ResearcherProHome() {
 
         <section className="section container">
           <div className="section-heading">
-            <span className="badge">THREE PRODUCTS, ONE EXPERIENCE</span>
+            <span className="badge">ONE CONNECTED RESEARCH EXPERIENCE</span>
             <h2>Choose your workspace</h2>
             <p>Every tool remains focused, while your research journey stays inside one platform.</p>
           </div>
