@@ -11,6 +11,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
         <a className="btn secondary" href="/admin/journal-matrix">Journal Matrix</a>
         <a className="btn secondary" href="/admin/citation-auditor">Citation Audit</a>
         <a className="btn secondary" href="/admin/integrity-corpus">Integrity Corpus</a>
+        <a className="btn primary" href="/admin/lecturer-agent">Lecturer Agent Hub</a>
         <a className="btn primary" href="/admin/thesis-writer">🎓 NOUN Thesis Writer</a>
         <a className="btn secondary" href="/admin/noun-chapter-humanizer">✍🏽 NOUN Chapter Humanizer</a>
       </div>
