@@ -21,6 +21,13 @@ const workspaces = [
     action: "Run a similarity check",
   },
   {
+    eyebrow: "LECTURER",
+    title: "Lecturer Agent Hub",
+    description: "Coordinate mass grading, grant preparation, thesis supervision, publication workflows and annual career evidence through persistent, review-gated academic agents.",
+    href: "/admin/lecturer-agent",
+    action: "Open the protected hub",
+  },
+  {
     eyebrow: "HUMANIZE",
     title: "Evidence-Safe Thesis Humanizer",
     description: "Diagnose dense prose, preserve your authentic voice, compare revisions and protect citations, numbers, headings, quotations and DOI links.",

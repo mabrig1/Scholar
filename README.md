@@ -34,10 +34,13 @@ The platform also includes an evidence-safe thesis humanizer, a Chapter Two Rese
 | `/admin/journal-matrix` | Multi-journal comparison |
 | `/admin/citation-auditor` | DOI, citation and retraction-signal audit |
 | `/admin/scholar-auditor` | Google Scholar compatibility audit |
+| `/admin/lecturer-agent` | Persistent, review-gated workflows for grading, grants, thesis supervision, publication and APER/EAA evidence |
 
 ## Responsible-use boundary
 
 Researcher Pro supports legitimate research planning, editing, formatting, citation checking and publication preparation. It must not invent sources, guarantee journal acceptance, misrepresent indexing, or replace the researcher's responsibility for authorship and factual accuracy.
+
+Lecturer Agent Hub external actions are disabled by default. Grades, portal uploads, grant submissions, student feedback, journal submissions, profile updates and APER/EAA claims require a recorded lecturer decision. A recorded approval marks a package ready for a separately configured integration; it does not bypass institutional authorization or submit anything by itself.
 
 ## Local development
 
