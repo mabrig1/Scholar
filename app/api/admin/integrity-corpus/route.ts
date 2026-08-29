@@ -13,14 +13,15 @@ const MAX_CHARS = 150_000;
 export async function GET() {
   try {
     await connectMongoDB();
-    const [total, submissions, embedded, institutions] = await Promise.all([
+    const [total, submissions, embedded, publicSources, institutions] = await Promise.all([
       CorpusSource.countDocuments(),
       CorpusSource.countDocuments({ sourceType: "submission" }),
       CorpusSource.countDocuments({ embedding: { $exists: true, $ne: [] } }),
+      CorpusSource.countDocuments({ publicComparisonAllowed: true }),
       CorpusSource.distinct("institution", { institution: { $nin: [null, ""] } }),
     ]);
-    const latest = await CorpusSource.find().select("title sourceType institution author year createdAt metadata").sort({ createdAt: -1 }).limit(50).lean().exec();
-    return NextResponse.json({ total, submissions, embedded, institutions: institutions.length, latest }, { headers: { "Cache-Control": "private, no-store" } });
+    const latest = await CorpusSource.find().select("title sourceType institution author year publicComparisonAllowed createdAt metadata").sort({ createdAt: -1 }).limit(50).lean().exec();
+    return NextResponse.json({ total, submissions, embedded, publicSources, institutions: institutions.length, latest }, { headers: { "Cache-Control": "private, no-store" } });
   } catch (error) {
     console.error("Integrity corpus summary failed", error);
     return NextResponse.json({ error: "Unable to load the integrity corpus." }, { status: 500 });
@@ -52,6 +53,23 @@ export async function POST(request: Request) {
     const allowedTypes = new Set(["thesis", "project", "article", "submission", "institutional", "web"]);
     const rawType = String(form.get("sourceType") || "institutional").trim().toLowerCase();
     const sourceType = allowedTypes.has(rawType) ? rawType : "institutional";
+    const rawYear = String(form.get("year") || "").trim();
+    const year = rawYear ? Number(rawYear) : undefined;
+    if (year !== undefined && (!Number.isInteger(year) || year < 1900 || year > new Date().getUTCFullYear() + 1)) {
+      return NextResponse.json({ error: "Enter a valid publication year." }, { status: 400 });
+    }
+    const rawUrl = String(form.get("url") || "").trim();
+    let url: string | undefined;
+    if (rawUrl) {
+      try {
+        const parsed = new URL(rawUrl);
+        if (!["http:", "https:"].includes(parsed.protocol)) throw new Error("Unsupported protocol");
+        url = parsed.toString().slice(0, 1500);
+      } catch {
+        return NextResponse.json({ error: "Evidence URL must be a valid HTTP or HTTPS address." }, { status: 400 });
+      }
+    }
+    const publicComparisonAllowed = form.get("publicComparisonAllowed") === "yes";
     const fingerprint = createHash("sha256").update(text).digest("hex");
     const provider = configuredEmbeddingProvider();
     let embedding: number[] | undefined;
@@ -66,10 +84,12 @@ export async function POST(request: Request) {
         title: title.slice(0, 500), text, sourceType,
         institution: String(form.get("institution") || "").trim().slice(0, 300) || undefined,
         author: String(form.get("author") || "").trim().slice(0, 300) || undefined,
-        year: Number(form.get("year")) || undefined,
-        url: String(form.get("url") || "").trim().slice(0, 1500) || undefined,
-        fingerprint, embedding,
-        metadata: { ingestion: "admin", permissionConfirmed: true, embeddingModel: provider?.model, embeddingDimensions: provider?.dimensions, embeddingError },
+        year,
+        url,
+        fingerprint,
+        embedding,
+        publicComparisonAllowed,
+        metadata: { ingestion: "admin", permissionConfirmed: true, publicComparisonAllowed, embeddingModel: provider?.model, embeddingDimensions: provider?.dimensions, embeddingError },
       } },
       { upsert: true, new: true, setDefaultsOnInsert: true },
     );

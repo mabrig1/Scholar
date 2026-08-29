@@ -98,7 +98,7 @@ export default function WorkspaceClient() {
             <button type="button" onClick={() => continueTo("/humanizer")}><strong>Humanize thesis writing</strong><small>Improve clarity while protecting evidence and structure.</small></button>
             <button type="button" onClick={() => continueTo("/chapter-two")}><strong>Build the Chapter Two review</strong><small>Find verified articles and synthesize the literature.</small></button>
             <button type="button" onClick={() => continueTo("/chapter-four")}><strong>Analyze Chapter Four data</strong><small>Generate tables, tests and editable interpretations.</small></button>
-            <button type="button" onClick={() => continueTo("/plagiarism-checker")}><strong>Run integrity similarity check</strong><small>Compare against evidence sources and the permissioned institutional corpus.</small></button>
+            <button type="button" onClick={() => continueTo("/plagiarism-checker")}><strong>Run integrity similarity check</strong><small>Compare against supplied evidence and corpus sources approved for anonymous comparison.</small></button>
             <button type="button" onClick={() => continueTo("/formatter")}><strong>Format with DocForge</strong><small>Create a structured Word document.</small></button>
             <button type="button" onClick={() => continueTo("/publishing-agent")}><strong>Build a publishing pathway</strong><small>Prefill the journal-matching agent.</small></button>
             <button type="button" onClick={() => continueTo("/academic-printing/order")}><strong>Request human assistance</strong><small>Submit the work and special instructions.</small></button>

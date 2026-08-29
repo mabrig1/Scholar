@@ -8,7 +8,8 @@ const CorpusSourceSchema = new Schema({
   author: { type: String, trim: true, maxlength: 300 },
   year: Number,
   url: { type: String, maxlength: 1500 },
-  fingerprint: { type: String, index: true },
+  fingerprint: { type: String, index: true, unique: true, sparse: true },
+  publicComparisonAllowed: { type: Boolean, default: false, index: true },
   embedding: { type: [Number], select: false },
   metadata: { type: Schema.Types.Mixed, default: {} },
 }, { timestamps: true });
@@ -31,5 +32,6 @@ export const IntegrityScan = mongoose.models.IntegrityScan || mongoose.model("In
 export const VECTOR_INDEX_BLUEPRINT = {
   name: "scholar_integrity_vectors",
   field: "embedding",
-  note: "Create this Atlas Vector Search index only after an embedding provider/model is selected. Query and corpus embeddings must use the same model and dimensions.",
+  filterFields: ["institution", "publicComparisonAllowed"],
+  note: "Create this Atlas Vector Search index only after an embedding provider/model is selected. Query and corpus embeddings must use the same model and dimensions. Add institution and publicComparisonAllowed as filter fields.",
 };

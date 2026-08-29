@@ -20,6 +20,7 @@ export default function IntegrityCorpusAdminPage() {
             <label className="field full"><span>Document</span><input name="file" type="file" accept=".txt,.md,.docx,.pdf,text/plain,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document" /></label>
             <label className="field full"><span>Or paste source text</span><textarea name="text" rows={12} /></label>
             <label className="field full"><span><input name="permissionConfirmed" value="yes" type="checkbox" required /> I confirm this material may be retained and used for academic similarity comparison.</span></label>
+            <label className="field full"><span><input name="publicComparisonAllowed" value="yes" type="checkbox" /> Allow anonymous users to compare against this source. This may expose short matching evidence passages, so leave it disabled for confidential or student work.</span></label>
             <button className="btn primary" type="submit">Add to Scholar corpus</button>
           </form>
           <div className="notice" style={{ marginTop: 18 }}><strong>Privacy:</strong> corpus retention is separate from ordinary similarity checking. Public users must explicitly opt in before their submission is retained for future comparison.</div>

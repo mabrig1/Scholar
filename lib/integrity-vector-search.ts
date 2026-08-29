@@ -1,3 +1,5 @@
+import type { PipelineStage } from "mongoose";
+
 export type VectorCandidate = {
   id: string;
   title: string;
@@ -28,15 +30,21 @@ export async function semanticCandidates(
   return corpus.search(vector, { limit: Math.min(options.limit || 20, 100), institution: options.institution });
 }
 
-export function atlasVectorPipeline(vector: number[], options: { index?: string; limit?: number; institution?: string } = {}) {
+export function atlasVectorPipeline(
+  vector: number[],
+  options: { index?: string; limit?: number; institution?: string; publicOnly?: boolean } = {},
+): PipelineStage[] {
   const limit = Math.min(Math.max(options.limit || 20, 1), 100);
-  const stage: Record<string, unknown> = {
+  const stage: PipelineStage.VectorSearch["$vectorSearch"] = {
     index: options.index || "scholar_integrity_vectors",
     path: "embedding",
     queryVector: vector,
     numCandidates: Math.min(Math.max(limit * 20, 100), 10_000),
     limit,
   };
-  if (options.institution) stage.filter = { institution: options.institution };
+  const filters: Record<string, unknown>[] = [];
+  if (options.institution) filters.push({ institution: options.institution });
+  if (options.publicOnly) filters.push({ publicComparisonAllowed: true });
+  if (filters.length) stage.filter = filters.length === 1 ? filters[0] : { $and: filters };
   return [{ $vectorSearch: stage }, { $project: { title: 1, text: 1, url: 1, score: { $meta: "vectorSearchScore" } } }];
 }

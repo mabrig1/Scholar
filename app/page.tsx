@@ -16,7 +16,7 @@ const workspaces = [
   {
     eyebrow: "INTEGRITY",
     title: "Scholar Integrity Engine",
-    description: "Screen DOCX, PDF or pasted academic work for evidence-backed verbatim, near-verbatim and paraphrase-like overlap, with academic-source discovery and a permissioned institutional corpus.",
+    description: "Screen DOCX, PDF or pasted academic work for evidence-backed verbatim, near-verbatim and possible paraphrase-like overlap, with academic-source discovery and sources explicitly approved for comparison.",
     href: "/plagiarism-checker",
     action: "Run a similarity check",
   },
