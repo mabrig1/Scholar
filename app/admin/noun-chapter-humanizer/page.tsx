@@ -1,11 +1,15 @@
+import { configuredAiProviders } from "@/lib/ai-provider";
+
 export const dynamic = "force-dynamic";
 
 export default function NounChapterHumanizerPage() {
-  const aiConfigured = Boolean(
+  const legacyConfigured = Boolean(
     process.env.AI_API_KEY?.trim() &&
     process.env.AI_BASE_URL?.trim() &&
     process.env.AI_MODEL?.trim(),
   );
+  const fallbackProviders = configuredAiProviders();
+  const aiConfigured = legacyConfigured || fallbackProviders.length > 0;
   const aiModel = process.env.AI_MODEL?.trim();
 
   return (
@@ -90,7 +94,7 @@ export default function NounChapterHumanizerPage() {
             </div>
 
             <div className="notice" style={{ marginTop: 10 }}>
-              <strong>Chapter 4 &amp; 5 data firewall:</strong> every numeric value is checked before and after rewriting. If a respondent count, percentage, coefficient, p-value, year or other number changes, the file is rejected. The editor is also instructed never to invent results or quotations.
+              <strong>Five integrity firewalls:</strong> citations, every numerical value, headings, quotations and DOI links are checked before and after editing. A damaged result is rejected instead of downloaded.
             </div>
 
             <div className="notice" style={{ marginTop: 10 }}>
@@ -98,7 +102,7 @@ export default function NounChapterHumanizerPage() {
             </div>
 
             <div className="notice" style={{ marginTop: 10 }}>
-              <strong>AI connection:</strong> {aiConfigured ? `Configured${aiModel ? ` with ${aiModel}` : ""}.` : "Not fully configured. Add AI_API_KEY, AI_BASE_URL and AI_MODEL in Vercel before using this tool."}
+              <strong>AI connection:</strong> {aiConfigured ? `Configured${aiModel ? ` with ${aiModel}` : fallbackProviders.length ? ` with ${fallbackProviders.join(", ")}` : ""}.` : "Not configured. Add one supported AI provider in Vercel before using this tool."}
             </div>
 
             <button className="btn primary conversion-download-btn" type="submit">✍🏽 Rewrite, Humanize &amp; Download NOUN Chapter (.docx)</button>

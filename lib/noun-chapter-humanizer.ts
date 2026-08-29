@@ -1,5 +1,9 @@
+import { configuredAiProviders, generateWithAiFallback } from "./ai-provider";
+import { auditRewriteIntegrity } from "./thesis-style-audit";
+
 export type NounChapterNumber = 1 | 2 | 3 | 4 | 5;
 export type NounRewriteDepth = "light" | "balanced" | "deep";
+export type ThesisHumanizationGoal = "clarity" | "formal-natural" | "concise" | "synthesis";
 
 const AI_TIMEOUT_MS = 90_000;
 const MAX_CHUNK_CHARS = 12_000;
@@ -26,6 +30,11 @@ export function parseNounChapterNumber(value: unknown): NounChapterNumber {
 export function parseNounRewriteDepth(value: unknown): NounRewriteDepth {
   if (value === "light" || value === "deep") return value;
   return "balanced";
+}
+
+export function parseThesisHumanizationGoal(value: unknown): ThesisHumanizationGoal {
+  if (value === "clarity" || value === "concise" || value === "synthesis") return value;
+  return "formal-natural";
 }
 
 function endpoint(baseUrl: string) {
@@ -79,39 +88,20 @@ function chunkDocument(text: string) {
   return chunks;
 }
 
-function citationFragments(text: string) {
-  const matches = text.match(/\([^\n()]{0,140}\b(?:19|20)\d{2}[a-z]?[^\n()]{0,80}\)/g) || [];
-  return Array.from(new Set(matches.map(item => item.trim())));
-}
-
-function numericTokens(text: string) {
-  return (text.match(/\b\d+(?:[.,]\d+)?%?\b/g) || []).sort();
-}
-
-function sameMultiset(a: string[], b: string[]) {
-  if (a.length !== b.length) return false;
-  return a.every((value, index) => value === b[index]);
-}
-
-function validateIntegrity(source: string, rewritten: string, chapter: NounChapterNumber) {
-  const missingCitations = citationFragments(source).filter(fragment => !rewritten.includes(fragment));
-  if (missingCitations.length) {
+function validateIntegrity(source: string, rewritten: string) {
+  const audit = auditRewriteIntegrity(source, rewritten);
+  if (!audit.citationsPreserved) {
     throw new NounChapterHumanizerError(
-      `The rewrite changed or removed ${missingCitations.length} in-text citation${missingCitations.length === 1 ? "" : "s"}. No file was produced; try again so citations remain exact.`,
+      `The rewrite changed or removed ${audit.missingCitations.length} in-text citation${audit.missingCitations.length === 1 ? "" : "s"}. The result was rejected so citations remain exact.`,
       422,
     );
   }
-
-  if (chapter === 4 || chapter === 5) {
-    const before = numericTokens(source);
-    const after = numericTokens(rewritten);
-    if (!sameMultiset(before, after)) {
-      throw new NounChapterHumanizerError(
-        "The rewrite altered, removed or added numeric/statistical values. For Chapters Four and Five the data firewall requires every number to remain unchanged, so no file was produced.",
-        422,
-      );
-    }
+  if (!audit.numbersPreserved) {
+    throw new NounChapterHumanizerError("The rewrite altered, removed or added a numerical value. The all-chapter data firewall rejected the result.", 422);
   }
+  if (!audit.headingsPreserved) throw new NounChapterHumanizerError("The rewrite changed or removed a thesis heading. The structure firewall rejected the result.", 422);
+  if (!audit.quotationsPreserved) throw new NounChapterHumanizerError("The rewrite changed or removed quoted material. The quotation firewall rejected the result.", 422);
+  if (!audit.doisPreserved) throw new NounChapterHumanizerError("The rewrite changed or removed a DOI. The source firewall rejected the result.", 422);
 }
 
 function chapterGuidance(chapter: NounChapterNumber) {
@@ -122,10 +112,20 @@ function chapterGuidance(chapter: NounChapterNumber) {
   return "Preserve every verified finding and numerical value. Keep conclusions and recommendations traceable to the supplied results and objectives. Do not add new findings, contributions or policy claims that are unsupported by the submitted chapter.";
 }
 
-function rewriteInstruction(depth: NounRewriteDepth) {
-  if (depth === "light") return "Use a light edit: correct grammar, remove awkward repetition, improve transitions and natural academic flow while retaining much of the original wording.";
-  if (depth === "deep") return "Use a deep rewrite: substantially vary sentence structure and wording, strengthen synthesis and coherence, and remove mechanical/repetitive phrasing while preserving the exact scholarly meaning and all protected evidence.";
-  return "Use a balanced rewrite: noticeably improve wording, sentence variety, paragraph flow and scholarly readability while preserving the writer's meaning and evidence.";
+function rewriteInstruction(depth: NounRewriteDepth, goal: ThesisHumanizationGoal) {
+  const depthInstruction = depth === "light"
+    ? "Use a light edit: correct grammar, remove awkward repetition, improve transitions and natural academic flow while retaining much of the original wording."
+    : depth === "deep"
+      ? "Use a deep edit: substantially revise sentence structure and paragraph coherence while preserving exact scholarly meaning and all protected evidence."
+      : "Use a balanced edit: noticeably improve wording, sentence variety, paragraph flow and scholarly readability while preserving the writer's meaning and evidence.";
+  const goalInstruction = goal === "clarity"
+    ? "Prioritize direct claims, clear subjects and verbs, and understandable logical connections."
+    : goal === "concise"
+      ? "Reduce redundancy and wordiness without deleting evidence, qualifications or necessary methodological detail."
+      : goal === "synthesis"
+        ? "Prioritize comparison, contrast, thematic connection and authorial interpretation instead of source-by-source listing."
+        : "Prioritize formal but natural academic English, varied rhythm and disciplined transitions without decorative vocabulary.";
+  return `${depthInstruction} ${goalInstruction}`;
 }
 
 async function rewriteChunk(options: {
@@ -134,12 +134,14 @@ async function rewriteChunk(options: {
   total: number;
   chapter: NounChapterNumber;
   depth: NounRewriteDepth;
+  goal: ThesisHumanizationGoal;
   title: string;
+  voiceSample: string;
   supervisorCorrections: string;
   extraInstructions: string;
-  apiKey: string;
-  baseUrl: string;
-  model: string;
+  apiKey?: string;
+  baseUrl?: string;
+  model?: string;
 }) {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), AI_TIMEOUT_MS);
@@ -147,12 +149,42 @@ async function rewriteChunk(options: {
     Authorization: `Bearer ${options.apiKey}`,
     "Content-Type": "application/json",
   };
-  if (options.baseUrl.includes("openrouter.ai")) {
+  if (options.baseUrl?.includes("openrouter.ai")) {
     headers["HTTP-Referer"] = process.env.NEXT_PUBLIC_APP_URL || "https://academic.mabrigkorie.org";
     headers["X-Title"] = "Mabrig Researcher Pro - NOUN Chapter Humanizer";
   }
 
   try {
+    const systemPrompt = [
+      "You are a careful academic editor for university thesis chapters.",
+      "Your task is human-centred academic editing, not inventing research content, disguising authorship or bypassing AI-detection systems.",
+      rewriteInstruction(options.depth, options.goal),
+      chapterGuidance(options.chapter),
+      "Preserve all headings and their numbering exactly. Never delete, renumber or invent a thesis section unless the researcher explicitly requests it.",
+      "Preserve every citation exactly as written, including author names, years and page numbers. Do not invent citations or references.",
+      "Preserve every numerical value, DOI, URL, quotation, proper name, date, formula, table/figure identifier and research term exactly.",
+      "Do not rewrite quoted material, tables, reference entries or statistical expressions; carry them through unchanged.",
+      "Use formal Nigerian and international university academic English, varied sentence construction, precise transitions and natural paragraph rhythm. Avoid clichés, filler, generic signposting and repetitive sentence openings.",
+      options.voiceSample ? "Use the supplied author voice sample only to calibrate rhythm, directness and preferred vocabulary. Never import its facts or citations into the chapter." : "",
+      "Return only the edited chapter text, with no commentary, labels or code fences.",
+    ].filter(Boolean).join(" ");
+    const userPrompt = [
+      `Research title: ${options.title || "Not supplied"}`,
+      `Selected chapter: Chapter ${options.chapter}`,
+      `Part ${options.index + 1} of ${options.total}`,
+      options.voiceSample ? `Author voice sample:\n${options.voiceSample}` : "",
+      options.supervisorCorrections ? `Supervisor corrections that must be respected:\n${options.supervisorCorrections}` : "",
+      options.extraInstructions ? `Additional editing instructions:\n${options.extraInstructions}` : "",
+      `Chapter text to edit:\n\n${options.chunk}`,
+    ].filter(Boolean).join("\n\n");
+
+    if (!options.apiKey || !options.baseUrl || !options.model) {
+      const fallback = await generateWithAiFallback(`${systemPrompt}\n\n${userPrompt}`);
+      const text = stripCodeFence(fallback?.text || "");
+      if (!text) throw new NounChapterHumanizerError("No configured AI provider could complete the thesis edit.", 503);
+      return text;
+    }
+
     const response = await fetch(endpoint(options.baseUrl), {
       method: "POST",
       headers,
@@ -164,27 +196,12 @@ async function rewriteChunk(options: {
           {
             role: "system",
             content: [
-              "You are a careful academic editor for National Open University of Nigeria (NOUN) thesis chapters.",
-              "Your task is rewriting and human-centred academic editing, not inventing research content and not bypassing AI-detection systems.",
-              rewriteInstruction(options.depth),
-              chapterGuidance(options.chapter),
-              "Preserve all Markdown headings and their numbering. Never delete, renumber or invent a thesis section unless the administrator explicitly requests it.",
-              "Preserve every citation exactly as written, including author names, years and page numbers. Do not invent citations or references.",
-              "Preserve quotations, proper names, dates, formulas, table/figure identifiers and research terminology.",
-              "Keep formal Nigerian university academic English, varied sentence construction, precise transitions and natural paragraph rhythm. Avoid clichés, filler, generic signposting and repetitive sentence openings.",
-              "Return only the rewritten chapter text, with no commentary, labels or code fences.",
+              systemPrompt,
             ].join(" "),
           },
           {
             role: "user",
-            content: [
-              `Research title: ${options.title || "Not supplied"}`,
-              `Selected chapter: Chapter ${options.chapter}`,
-              `Part ${options.index + 1} of ${options.total}`,
-              options.supervisorCorrections ? `Supervisor corrections that must be respected:\n${options.supervisorCorrections}` : "",
-              options.extraInstructions ? `Additional editing instructions:\n${options.extraInstructions}` : "",
-              `Chapter text to rewrite:\n\n${options.chunk}`,
-            ].filter(Boolean).join("\n\n"),
+            content: userPrompt,
           },
         ],
       }),
@@ -213,7 +230,9 @@ export async function humanizeNounChapter(options: {
   text: string;
   chapter: NounChapterNumber;
   depth: NounRewriteDepth;
+  goal?: ThesisHumanizationGoal;
   title?: string;
+  voiceSample?: string;
   supervisorCorrections?: string;
   extraInstructions?: string;
 }) {
@@ -224,8 +243,9 @@ export async function humanizeNounChapter(options: {
   const apiKey = process.env.AI_API_KEY?.trim();
   const baseUrl = process.env.AI_BASE_URL?.trim();
   const model = process.env.AI_MODEL?.trim();
-  if (!apiKey || !baseUrl || !model) {
-    throw new NounChapterHumanizerError("NOUN Chapter Rewriter & Humanizer requires AI_API_KEY, AI_BASE_URL and AI_MODEL in Vercel.", 503);
+  const legacyConfigured = Boolean(apiKey && baseUrl && model);
+  if (!legacyConfigured && configuredAiProviders().length === 0) {
+    throw new NounChapterHumanizerError("The Thesis Humanizer requires one configured AI provider in Vercel.", 503);
   }
 
   const chunks = chunkDocument(source);
@@ -238,18 +258,20 @@ export async function humanizeNounChapter(options: {
       total: chunks.length,
       chapter: options.chapter,
       depth: options.depth,
+      goal: options.goal || "formal-natural",
       title: options.title || "",
+      voiceSample: (options.voiceSample || "").slice(0, 5_000),
       supervisorCorrections: (options.supervisorCorrections || "").slice(0, 20_000),
       extraInstructions: (options.extraInstructions || "").slice(0, 10_000),
-      apiKey,
-      baseUrl,
-      model,
+      apiKey: legacyConfigured ? apiKey : undefined,
+      baseUrl: legacyConfigured ? baseUrl : undefined,
+      model: legacyConfigured ? model : undefined,
     })));
     results.forEach((result, offset) => { transformed[start + offset] = result; });
   }
 
   const rewritten = transformed.join("\n\n").trim();
-  validateIntegrity(source, rewritten, options.chapter);
+  validateIntegrity(source, rewritten);
   if (rewritten.replace(/\s+/g, " ") === source.replace(/\s+/g, " ")) {
     throw new NounChapterHumanizerError("The editor returned the original chapter unchanged. Try Balanced or Deep rewrite.", 422);
   }

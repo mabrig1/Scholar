@@ -95,6 +95,7 @@ export default function WorkspaceClient() {
           <article className="card workspace-next-card">
             <span className="badge">CONTINUE</span>
             <h2>Choose the next action</h2>
+            <button type="button" onClick={() => continueTo("/humanizer")}><strong>Humanize thesis writing</strong><small>Improve clarity while protecting evidence and structure.</small></button>
             <button type="button" onClick={() => continueTo("/chapter-two")}><strong>Build the Chapter Two review</strong><small>Find verified articles and synthesize the literature.</small></button>
             <button type="button" onClick={() => continueTo("/chapter-four")}><strong>Analyze Chapter Four data</strong><small>Generate tables, tests and editable interpretations.</small></button>
             <button type="button" onClick={() => continueTo("/formatter")}><strong>Format with DocForge</strong><small>Create a structured Word document.</small></button>

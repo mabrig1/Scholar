@@ -16,6 +16,14 @@ const workspaces = [
     action: "Analyze thesis data",
   },
   {
+    eyebrow: "HUMANIZE",
+    title: "Evidence-Safe Thesis Humanizer",
+    description:
+      "Diagnose dense prose, preserve your authentic voice, compare revisions and protect citations, numbers, headings, quotations and DOI links.",
+    href: "/humanizer",
+    action: "Improve thesis writing",
+  },
+  {
     eyebrow: "PUBLISH",
     title: "Publishing Intelligence",
     description:
@@ -45,6 +53,7 @@ const trustPoints = [
   "Meaning-preserving rewriting",
   "No invented citations",
   "DOI-registered literature search",
+  "Five evidence-integrity firewalls",
   "Evidence-aware journal guidance",
   "Downloadable Word documents",
   "Up to 100-page service submissions",
@@ -63,6 +72,7 @@ export default function ResearcherProHome() {
           <a className="btn secondary" href="/workspace">Workspace</a>
           <a className="btn secondary" href="/chapter-two">Review</a>
           <a className="btn secondary" href="/chapter-four">Analyze</a>
+          <a className="btn secondary" href="/humanizer">Humanize</a>
           <a className="btn secondary" href="/formatter">Format</a>
           <a className="btn secondary" href="/publishing-agent">Publish</a>
           <a className="btn secondary" href="/pricing">Pricing</a>
@@ -87,7 +97,7 @@ export default function ResearcherProHome() {
             <aside className="researcher-command-card" aria-label="Research workflow">
               <span>RESEARCHER COMMAND CENTRE</span>
               <ol>
-                <li><strong>Prepare</strong><small>Rewrite, humanize and structure</small></li>
+                <li><strong>Prepare</strong><small>Diagnose, rewrite and protect evidence</small></li>
                 <li><strong>Review</strong><small>Verify sources and synthesize literature</small></li>
                 <li><strong>Analyze</strong><small>Build Chapter Four tables and findings</small></li>
                 <li><strong>Format</strong><small>Apply institutional or journal style</small></li>

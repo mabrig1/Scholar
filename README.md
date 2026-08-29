@@ -8,7 +8,7 @@ Mabrig Researcher Pro combines three Mabrig products into one research workspace
 
 The original repositories remain independent. This repository is the consolidated product and future source of truth for shared Researcher Pro development.
 
-The platform also includes a Chapter Two Research Studio for DOI-traceable literature reviews and a local-first Chapter Four Data Analysis Lab for thesis results, statistical tables, assumption-aware interpretation and editable Word export.
+The platform also includes an evidence-safe thesis humanizer, a Chapter Two Research Studio for DOI-traceable literature reviews and a local-first Chapter Four Data Analysis Lab for thesis results, statistical tables, assumption-aware interpretation and editable Word export.
 
 ## Main workspaces
 
@@ -16,6 +16,7 @@ The platform also includes a Chapter Two Research Studio for DOI-traceable liter
 | --- | --- |
 | `/` | Unified Researcher Pro landing page |
 | `/workspace` | Persistent browser-based manuscript profile and guided workflow |
+| `/humanizer` | Thesis style diagnostics, voice-preserving editing, five integrity firewalls, comparison and Word export |
 | `/chapter-two` | DOI-registered article search, conceptual/theoretical frameworks, previous-study synthesis and Word export |
 | `/chapter-four` | CSV-based descriptive statistics, Likert reliability, correlation, chi-square, regression and Word report export |
 | `/formatter` | Public DocForge formatting and Word export studio |
