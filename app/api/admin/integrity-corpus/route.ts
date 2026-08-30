@@ -69,8 +69,27 @@ export async function POST(request: Request) {
         return NextResponse.json({ error: "Evidence URL must be a valid HTTP or HTTPS address." }, { status: 400 });
       }
     }
+
     const publicComparisonAllowed = form.get("publicComparisonAllowed") === "yes";
     const fingerprint = createHash("sha256").update(text).digest("hex");
+
+    // Deduplicate by content fingerprint. If the document was retained earlier while
+    // embeddings were unavailable, a later re-upload can safely backfill its embedding.
+    const existing = await CorpusSource.findOne({ fingerprint }).select("+embedding").exec();
+    const existingEmbedding = existing && Array.isArray(existing.embedding) ? existing.embedding : [];
+    if (existing && existingEmbedding.length > 0) {
+      return NextResponse.json({
+        ok: true,
+        id: String(existing._id),
+        title: existing.title,
+        sourceType: existing.sourceType,
+        deduplicated: true,
+        embedded: true,
+        embeddingModel: existing.metadata?.embeddingModel || null,
+        embeddingWarning: null,
+      });
+    }
+
     const provider = configuredEmbeddingProvider();
     let embedding: number[] | undefined;
     let embeddingError: string | undefined;
@@ -78,22 +97,63 @@ export async function POST(request: Request) {
       try { [embedding] = await provider.embed([text.slice(0, 12_000)]); }
       catch (error) { embeddingError = error instanceof Error ? error.message : "Embedding generation failed."; }
     }
-    const source = await CorpusSource.findOneAndUpdate(
-      { fingerprint },
-      { $setOnInsert: {
-        title: title.slice(0, 500), text, sourceType,
-        institution: String(form.get("institution") || "").trim().slice(0, 300) || undefined,
-        author: String(form.get("author") || "").trim().slice(0, 300) || undefined,
-        year,
-        url,
-        fingerprint,
-        embedding,
+
+    if (existing) {
+      if (embedding) {
+        const metadata = existing.metadata && typeof existing.metadata === "object" && !Array.isArray(existing.metadata) ? existing.metadata : {};
+        existing.embedding = embedding;
+        existing.metadata = {
+          ...metadata,
+          embeddingModel: provider?.model,
+          embeddingDimensions: provider?.dimensions,
+          embeddingError: undefined,
+        };
+        await existing.save();
+      }
+
+      return NextResponse.json({
+        ok: true,
+        id: String(existing._id),
+        title: existing.title,
+        sourceType: existing.sourceType,
+        deduplicated: true,
+        embedded: Boolean(embedding),
+        embeddingModel: embedding ? provider?.model : null,
+        embeddingWarning: embeddingError || (!provider ? "Embedding provider is not configured; lexical comparison remains available." : null),
+      });
+    }
+
+    const source = await CorpusSource.create({
+      title: title.slice(0, 500),
+      text,
+      sourceType,
+      institution: String(form.get("institution") || "").trim().slice(0, 300) || undefined,
+      author: String(form.get("author") || "").trim().slice(0, 300) || undefined,
+      year,
+      url,
+      fingerprint,
+      embedding,
+      publicComparisonAllowed,
+      metadata: {
+        ingestion: "admin",
+        permissionConfirmed: true,
         publicComparisonAllowed,
-        metadata: { ingestion: "admin", permissionConfirmed: true, publicComparisonAllowed, embeddingModel: provider?.model, embeddingDimensions: provider?.dimensions, embeddingError },
-      } },
-      { upsert: true, new: true, setDefaultsOnInsert: true },
-    );
-    return NextResponse.json({ ok: true, id: String(source._id), title: source.title, sourceType: source.sourceType, embedded: Boolean(embedding), embeddingModel: embedding ? provider?.model : null, embeddingWarning: embeddingError || (!provider ? "Embedding provider is not configured; lexical comparison remains available." : null) });
+        embeddingModel: provider?.model,
+        embeddingDimensions: provider?.dimensions,
+        embeddingError,
+      },
+    });
+
+    return NextResponse.json({
+      ok: true,
+      id: String(source._id),
+      title: source.title,
+      sourceType: source.sourceType,
+      deduplicated: false,
+      embedded: Boolean(embedding),
+      embeddingModel: embedding ? provider?.model : null,
+      embeddingWarning: embeddingError || (!provider ? "Embedding provider is not configured; lexical comparison remains available." : null),
+    });
   } catch (error) {
     console.error("Integrity corpus ingestion failed", error);
     return NextResponse.json({ error: "Unable to ingest this corpus document." }, { status: 500 });
