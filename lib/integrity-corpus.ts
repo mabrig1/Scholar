@@ -26,8 +26,10 @@ const IntegrityScanSchema = new Schema({
   report: { type: Schema.Types.Mixed },
 }, { timestamps: true });
 
-export const CorpusSource = mongoose.models.CorpusSource || mongoose.model("CorpusSource", CorpusSourceSchema);
-export const IntegrityScan = mongoose.models.IntegrityScan || mongoose.model("IntegrityScan", IntegrityScanSchema);
+// Keep collection names explicit so application writes and Atlas Vector Search
+// always target the same collections across environments.
+export const CorpusSource = mongoose.models.CorpusSource || mongoose.model("CorpusSource", CorpusSourceSchema, "integrity_corpus");
+export const IntegrityScan = mongoose.models.IntegrityScan || mongoose.model("IntegrityScan", IntegrityScanSchema, "integrity_scans");
 
 export const VECTOR_INDEX_BLUEPRINT = {
   name: "scholar_integrity_vectors",
