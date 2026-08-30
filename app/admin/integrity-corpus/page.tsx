@@ -25,6 +25,16 @@ export default function IntegrityCorpusAdminPage() {
           </form>
           <div className="notice" style={{ marginTop: 18 }}><strong>Privacy:</strong> corpus retention is separate from ordinary similarity checking. Public users must explicitly opt in before their submission is retained for future comparison.</div>
         </article>
+
+        <article className="card" style={{ maxWidth: 900, margin: "24px auto 0" }}>
+          <h2>Embedding maintenance</h2>
+          <p>Generate the semantic vector for the next retained corpus source that does not yet have one. This is useful after configuring or changing the Hugging Face embedding provider. One source is processed per request to stay within serverless execution limits.</p>
+          <form action="/api/admin/integrity-corpus" method="post">
+            <input type="hidden" name="action" value="backfill-embedding" />
+            <button className="btn secondary" type="submit">Backfill next missing embedding</button>
+          </form>
+          <div className="notice" style={{ marginTop: 18 }}><strong>Safety:</strong> backfilling does not make a private source public. The existing <code>publicComparisonAllowed</code> permission is preserved.</div>
+        </article>
       </section>
     </main>
   );
