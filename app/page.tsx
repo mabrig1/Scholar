@@ -1,4 +1,11 @@
-const workspaces = [\n  {\n    eyebrow: "AGENTIC",\n    title: "Research Mission OS",\n    description: "Launch a multi-step research mission that coordinates literature discovery, evidence verification, synthesis, grounding critique, integrity and publication handoffs.",\n    href: "/research-agent",\n    action: "Run an agentic research mission",\n  },
+const workspaces = [
+  {
+    eyebrow: "AGENTIC",
+    title: "Research Mission OS",
+    description: "Launch a multi-step research mission that coordinates literature discovery, evidence verification, synthesis, grounding critique, integrity and publication handoffs.",
+    href: "/research-agent",
+    action: "Run an agentic research mission",
+  },
   {
     eyebrow: "REVIEW",
     title: "Chapter Two Research Studio",
