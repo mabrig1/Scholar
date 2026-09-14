@@ -39,6 +39,8 @@ The `/research-agent` workspace adds an auditable multi-agent research flow: Mis
 | `/admin/journal-matrix` | Multi-journal comparison |
 | `/admin/citation-auditor` | DOI, citation and retraction-signal audit |
 | `/admin/scholar-auditor` | Google Scholar compatibility audit |
+| `/admin/google-scholar-studio` | Lecturer Google Scholar indexing/visibility readiness studio with profile, crawlability and metadata action plan |
+| `/admin/scopus-studio` | Lecturer Scopus visibility studio for author-profile cleanup, source coverage verification and publication readiness |
 | `/admin/lecturer-agent` | Persistent, review-gated workflows for grading, grants, thesis supervision, publication and APER/EAA evidence |
 
 ## Responsible-use boundary
