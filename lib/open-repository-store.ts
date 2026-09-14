@@ -3,6 +3,10 @@ import { RepositoryResearcher, RepositoryWork } from "@/lib/open-repository-mode
 import type { RepositorySubmissionInput } from "@/lib/open-repository";
 import { normalizeDoi, normalizeOrcid, researcherSlug, workSlug } from "@/lib/open-repository";
 
+function escapeRegex(value: string) {
+  return value.replace(/[.*+?^$()|[\]\\]/g, "\\$&");
+}
+
 export async function upsertRepositoryResearcher(input: RepositorySubmissionInput) {
   await connectMongoDB();
   const slug = researcherSlug(input.fullName, input.orcid);
@@ -71,10 +75,7 @@ export async function listPublishedWorks(query = "", limit = 50) {
   const filter: Record<string, unknown> = { status: "APPROVED" };
   const trimmed = query.trim();
   if (trimmed) {
-    const escaped = trimmed.replace(/[.*+?^$()|[\]\\]/g, "\\  const filter: Record<string, unknown> = { status: "APPROVED" };
-  const trimmed = query.trim();
-  if (trimmed) filter.$text = { $search: trimmed };");
-    const pattern = new RegExp(escaped, "i");
+    const pattern = new RegExp(escapeRegex(trimmed), "i");
     filter.$or = [
       { title: pattern },
       { abstract: pattern },
@@ -82,11 +83,13 @@ export async function listPublishedWorks(query = "", limit = 50) {
       { keywords: pattern },
     ];
   }
+
   const works = await RepositoryWork.find(filter)
     .sort({ approvedAt: -1, createdAt: -1 })
     .limit(Math.max(1, Math.min(limit, 100)))
     .populate("researcherId", "slug fullName affiliation department orcid bio")
     .lean();
+
   return JSON.parse(JSON.stringify(works));
 }
 
@@ -102,9 +105,11 @@ export async function getPublishedResearcher(slug: string) {
   await connectMongoDB();
   const researcher = await RepositoryResearcher.findOne({ slug }).lean();
   if (!researcher) return null;
+
   const works = await RepositoryWork.find({ researcherId: researcher._id, status: "APPROVED" })
     .sort({ year: -1, approvedAt: -1 })
     .lean();
+
   if (!works.length) return null;
   return JSON.parse(JSON.stringify({ researcher, works }));
 }
@@ -123,6 +128,7 @@ export async function listPendingRepositoryWorks(limit = 100) {
     .limit(Math.max(1, Math.min(limit, 100)))
     .populate("researcherId", "+contactEmail slug fullName affiliation department orcid")
     .lean();
+
   return JSON.parse(JSON.stringify(works));
 }
 
@@ -150,6 +156,7 @@ export async function moderateRepositoryWork(input: {
     work.status = "REJECTED";
     work.moderationNote = (input.note || "").trim();
   }
+
   await work.save();
   return work;
 }
@@ -163,6 +170,7 @@ export async function getPendingRepositoryPdf(id: string) {
 
 export async function getRepositorySitemapEntries() {
   if (!process.env.MONGODB_URI?.trim()) return { works: [], researchers: [] };
+
   try {
     await connectMongoDB();
     const [works, researchers] = await Promise.all([
@@ -180,6 +188,7 @@ export async function getRepositorySitemapEntries() {
         { $project: { slug: 1, updatedAt: 1 } },
       ]),
     ]);
+
     return {
       works: works.map((item) => ({ slug: item.slug, updatedAt: item.updatedAt })),
       researchers: researchers.map((item) => ({ slug: item.slug, updatedAt: item.updatedAt })),
