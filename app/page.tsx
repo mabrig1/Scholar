@@ -35,6 +35,13 @@ const workspaces = [
     action: "Open the protected hub",
   },
   {
+    eyebrow: "VISIBILITY",
+    title: "Lecturer Indexing Studios",
+    description: "Assess Google Scholar discoverability and Scopus profile/publication readiness with transparent, non-guaranteed action plans for lecturers.",
+    href: "/admin/google-scholar-studio",
+    action: "Open lecturer visibility tools",
+  },
+  {
     eyebrow: "HUMANIZE",
     title: "Evidence-Safe Thesis Humanizer",
     description: "Diagnose dense prose, preserve your authentic voice, compare revisions and protect citations, numbers, headings, quotations and DOI links.",
