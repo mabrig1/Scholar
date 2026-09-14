@@ -8,14 +8,19 @@ Mabrig Researcher Pro combines three Mabrig products into one research workspace
 
 The original repositories remain independent. This repository is the consolidated product and future source of truth for shared Researcher Pro development.
 
-The platform also includes an evidence-safe thesis humanizer, a Chapter Two Research Studio for DOI-traceable literature reviews and a local-first Chapter Four Data Analysis Lab for thesis results, statistical tables, assumption-aware interpretation and editable Word export.\n\n## Agentic Research OS\n\nThe `/research-agent` workspace adds an auditable multi-agent research flow: Mission Planner → Literature Scout → Evidence Auditor → Synthesis Agent → Grounding Critic → specialist handoffs. It uses Crossref for DOI-registered discovery, OpenAlex for secondary verification and retraction/open-access signals, deterministic evidence scoring, source-ID constrained synthesis, and a deep-mode second-pass critique when an AI provider is configured. The agent never treats retrieval scores as truth and explicitly preserves full-text and human-review gates.
+The platform also includes an evidence-safe thesis humanizer, a Chapter Two Research Studio for DOI-traceable literature reviews and a local-first Chapter Four Data Analysis Lab for thesis results, statistical tables, assumption-aware interpretation and editable Word export.
+
+## Agentic Research OS
+
+The `/research-agent` workspace adds an auditable multi-agent research flow: Mission Planner → Literature Scout → Evidence Auditor → Synthesis Agent → Grounding Critic → specialist handoffs. It uses Crossref for DOI-registered discovery, OpenAlex for secondary verification and retraction/open-access signals, deterministic evidence scoring, source-ID constrained synthesis, and a deep-mode second-pass critique when an AI provider is configured. The agent never treats retrieval scores as truth and explicitly preserves full-text and human-review gates.
 
 ## Main workspaces
 
 | Route | Purpose |
 | --- | --- |
 | `/` | Unified Researcher Pro landing page |
-| `/workspace` | Persistent browser-based manuscript profile and guided workflow |\n| `/research-agent` | Agentic Research OS for multi-step planning, DOI-backed discovery, OpenAlex verification, evidence scoring, grounded synthesis and critique |
+| `/workspace` | Persistent browser-based manuscript profile and guided workflow |
+| `/research-agent` | Agentic Research OS for multi-step planning, DOI-backed discovery, OpenAlex verification, evidence scoring, grounded synthesis and critique |
 | `/humanizer` | Thesis style diagnostics, voice-preserving editing, five integrity firewalls, comparison and Word export |
 | `/chapter-two` | DOI-registered article search, conceptual/theoretical frameworks, previous-study synthesis and Word export |
 | `/chapter-four` | CSV-based descriptive statistics, Likert reliability, correlation, chi-square, regression and Word report export |
