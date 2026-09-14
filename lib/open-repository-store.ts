@@ -54,7 +54,7 @@ export async function createRepositorySubmission(
     abstract: input.abstract.trim(),
     keywords: input.keywords,
     journal: (input.journal || "").trim(),
-    doi,
+    ...(doi ? { doi } : {}),
     externalUrl: (input.externalUrl || "").trim(),
     license: (input.license || "").trim(),
     rightsStatement: (input.rightsStatement || "").trim(),
@@ -70,7 +70,18 @@ export async function listPublishedWorks(query = "", limit = 50) {
   await connectMongoDB();
   const filter: Record<string, unknown> = { status: "APPROVED" };
   const trimmed = query.trim();
-  if (trimmed) filter.$text = { $search: trimmed };
+  if (trimmed) {
+    const escaped = trimmed.replace(/[.*+?^$()|[\]\\]/g, "\\  const filter: Record<string, unknown> = { status: "APPROVED" };
+  const trimmed = query.trim();
+  if (trimmed) filter.$text = { $search: trimmed };");
+    const pattern = new RegExp(escaped, "i");
+    filter.$or = [
+      { title: pattern },
+      { abstract: pattern },
+      { journal: pattern },
+      { keywords: pattern },
+    ];
+  }
   const works = await RepositoryWork.find(filter)
     .sort({ approvedAt: -1, createdAt: -1 })
     .limit(Math.max(1, Math.min(limit, 100)))
@@ -151,7 +162,7 @@ export async function getPendingRepositoryPdf(id: string) {
 }
 
 export async function getRepositorySitemapEntries() {
-  if (!process.env.MONGODB_URI?.trim()) return [];
+  if (!process.env.MONGODB_URI?.trim()) return { works: [], researchers: [] };
   try {
     await connectMongoDB();
     const [works, researchers] = await Promise.all([
