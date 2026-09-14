@@ -35,11 +35,11 @@ const workspaces = [
     action: "Open the protected hub",
   },
   {
-    eyebrow: "VISIBILITY",
-    title: "Lecturer Indexing Studios",
-    description: "Assess Google Scholar discoverability and Scopus profile/publication readiness with transparent, non-guaranteed action plans for lecturers.",
-    href: "/admin/google-scholar-studio",
-    action: "Open lecturer visibility tools",
+    eyebrow: "DISCOVER",
+    title: "Academic Indexing Agent",
+    description: "Move a finished paper through identity, metadata, rights-safe hosting, Scholar-compatible markup, crawl discovery and verification—built for postgraduates and early-career lecturers.",
+    href: "/academic-indexing-agent",
+    action: "Start an indexing mission",
   },
   {
     eyebrow: "HUMANIZE",
@@ -86,7 +86,7 @@ const trustPoints = [
 
 export default function ResearcherProHome() {
   return <>
-    <header className="container nav researcher-nav"><a className="brand researcher-brand" href="/"><span>MRP</span><strong>Mabrig Researcher Pro</strong></a><nav className="actions" aria-label="Primary navigation"><a className="btn secondary" href="/workspace">Workspace</a><a className="btn secondary" href="/research-agent">Research Agent</a><a className="btn secondary" href="/chapter-two">Review</a><a className="btn secondary" href="/chapter-four">Analyze</a><a className="btn secondary" href="/plagiarism-checker">Integrity</a><a className="btn secondary" href="/humanizer">Humanize</a><a className="btn secondary" href="/formatter">Format</a><a className="btn secondary" href="/publishing-agent">Publish</a><a className="btn secondary" href="/pricing">Pricing</a><a className="btn primary" href="/academic-printing/order">Human Support</a></nav></header>
+    <header className="container nav researcher-nav"><a className="brand researcher-brand" href="/"><span>MRP</span><strong>Mabrig Researcher Pro</strong></a><nav className="actions" aria-label="Primary navigation"><a className="btn secondary" href="/workspace">Workspace</a><a className="btn secondary" href="/research-agent">Research Agent</a><a className="btn secondary" href="/academic-indexing-agent">Index</a><a className="btn secondary" href="/chapter-two">Review</a><a className="btn secondary" href="/chapter-four">Analyze</a><a className="btn secondary" href="/plagiarism-checker">Integrity</a><a className="btn secondary" href="/humanizer">Humanize</a><a className="btn secondary" href="/formatter">Format</a><a className="btn secondary" href="/publishing-agent">Publish</a><a className="btn secondary" href="/pricing">Pricing</a><a className="btn primary" href="/academic-printing/order">Human Support</a></nav></header>
     <main>
       <section className="researcher-hero"><div className="container researcher-hero-grid"><div><span className="badge">ONE RESEARCH WORKSPACE • GLOBAL SUPPORT</span><h1>Research. Review. Analyze. Check. Format. Publish—with confidence.</h1><p className="lead">Mabrig Researcher Pro brings publishing intelligence, academic integrity screening, DocForge document formatting and professional academic assistance into one responsible research platform.</p><div className="actions"><a className="btn primary" href="/research-agent">Run a research mission</a><a className="btn secondary" href="/workspace">Create manuscript workspace</a></div></div><aside className="researcher-command-card" aria-label="Research workflow"><span>AGENTIC RESEARCH COMMAND CENTRE</span><ol><li><strong>Plan</strong><small>Decompose the mission and coordinate specialist agents</small></li><li><strong>Prepare</strong><small>Diagnose, rewrite and protect evidence</small></li><li><strong>Review</strong><small>Verify sources and synthesize literature</small></li><li><strong>Analyze</strong><small>Build Chapter Four tables and findings</small></li><li><strong>Check</strong><small>Inspect source-attributed similarity evidence</small></li><li><strong>Format</strong><small>Apply institutional or journal style</small></li><li><strong>Submit</strong><small>Follow a journal-specific pathway</small></li></ol></aside></div></section>
       <section className="section container"><div className="section-heading"><span className="badge">ONE CONNECTED RESEARCH EXPERIENCE</span><h2>Choose your workspace</h2><p>Every tool remains focused, while your research journey stays inside one platform.</p></div><div className="researcher-workspace-grid">{workspaces.map((workspace)=><article className="researcher-workspace-card" key={workspace.title}><span>{workspace.eyebrow}</span><h3>{workspace.title}</h3><p>{workspace.description}</p><a href={workspace.href}>{workspace.action} →</a></article>)}</div></section>

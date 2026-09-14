@@ -21,6 +21,7 @@ The `/research-agent` workspace adds an auditable multi-agent research flow: Mis
 | `/` | Unified Researcher Pro landing page |
 | `/workspace` | Persistent browser-based manuscript profile and guided workflow |
 | `/research-agent` | Agentic Research OS for multi-step planning, DOI-backed discovery, OpenAlex verification, evidence scoring, grounded synthesis and critique |
+| `/academic-indexing-agent` | Public step-by-step Google Scholar indexing-readiness agent for identity, metadata, rights-safe hosting, crawl discovery, Highwire tags and verification |
 | `/humanizer` | Thesis style diagnostics, voice-preserving editing, five integrity firewalls, comparison and Word export |
 | `/chapter-two` | DOI-registered article search, conceptual/theoretical frameworks, previous-study synthesis and Word export |
 | `/chapter-four` | CSV-based descriptive statistics, Likert reliability, correlation, chi-square, regression and Word report export |
@@ -46,6 +47,8 @@ The `/research-agent` workspace adds an auditable multi-agent research flow: Mis
 ## Responsible-use boundary
 
 Researcher Pro supports legitimate research planning, editing, formatting, citation checking and publication preparation. It must not invent sources, guarantee journal acceptance, misrepresent indexing, or replace the researcher's responsibility for authorship and factual accuracy.
+
+The Academic Indexing Agent does not use Google's Indexing API for scholarly articles because Google restricts that API to eligible JobPosting and livestream BroadcastEvent pages. It instead follows Scholar-compatible crawlability, bibliographic metadata, sitemap/Search Console and verification workflows.
 
 Lecturer Agent Hub external actions are disabled by default. Grades, portal uploads, grant submissions, student feedback, journal submissions, profile updates and APER/EAA claims require a recorded lecturer decision. A recorded approval marks a package ready for a separately configured integration; it does not bypass institutional authorization or submit anything by itself.
 
