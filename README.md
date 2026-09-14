@@ -8,7 +8,7 @@ Mabrig Researcher Pro combines three Mabrig products into one research workspace
 
 The original repositories remain independent. This repository is the consolidated product and future source of truth for shared Researcher Pro development.
 
-The platform also includes an evidence-safe thesis humanizer, a Chapter Two Research Studio for DOI-traceable literature reviews and a local-first Chapter Four Data Analysis Lab for thesis results, statistical tables, assumption-aware interpretation and editable Word export.
+The platform also includes an evidence-safe thesis humanizer, a Chapter Two Research Studio for DOI-traceable literature reviews, a local-first Chapter Four Data Analysis Lab, and the MABRIG Open Research Repository for moderated rights-cleared scholarly deposits with permanent public records.
 
 ## Agentic Research OS
 
@@ -22,6 +22,10 @@ The `/research-agent` workspace adds an auditable multi-agent research flow: Mis
 | `/workspace` | Persistent browser-based manuscript profile and guided workflow |
 | `/research-agent` | Agentic Research OS for multi-step planning, DOI-backed discovery, OpenAlex verification, evidence scoring, grounded synthesis and critique |
 | `/academic-indexing-agent` | Public step-by-step Google Scholar indexing-readiness agent for identity, metadata, rights-safe hosting, crawl discovery, Highwire tags and verification |
+| `/repository` | MABRIG Open Research Repository public search and approved scholarly records |
+| `/repository/submit` | Moderated rights-safe scholarly deposit workflow |
+| `/repository/works/[slug]` | Permanent one-work-per-URL scholarly landing page with Highwire metadata and JSON-LD |
+| `/repository/researchers/[slug]` | Public researcher profile and approved outputs |
 | `/humanizer` | Thesis style diagnostics, voice-preserving editing, five integrity firewalls, comparison and Word export |
 | `/chapter-two` | DOI-registered article search, conceptual/theoretical frameworks, previous-study synthesis and Word export |
 | `/chapter-four` | CSV-based descriptive statistics, Likert reliability, correlation, chi-square, regression and Word report export |
@@ -43,12 +47,15 @@ The `/research-agent` workspace adds an auditable multi-agent research flow: Mis
 | `/admin/google-scholar-studio` | Lecturer Google Scholar indexing/visibility readiness studio with profile, crawlability and metadata action plan |
 | `/admin/scopus-studio` | Lecturer Scopus visibility studio for author-profile cleanup, source coverage verification and publication readiness |
 | `/admin/lecturer-agent` | Persistent, review-gated workflows for grading, grants, thesis supervision, publication and APER/EAA evidence |
+| `/admin/repository` | Protected repository moderation queue for rights and metadata review |
 
 ## Responsible-use boundary
 
 Researcher Pro supports legitimate research planning, editing, formatting, citation checking and publication preparation. It must not invent sources, guarantee journal acceptance, misrepresent indexing, or replace the researcher's responsibility for authorship and factual accuracy.
 
 The Academic Indexing Agent does not use Google's Indexing API for scholarly articles because Google restricts that API to eligible JobPosting and livestream BroadcastEvent pages. It instead follows Scholar-compatible crawlability, bibliographic metadata, sitemap/Search Console and verification workflows.
+
+The MABRIG Open Research Repository keeps new deposits private until an administrator verifies both the sharing rights/version and the scholarly metadata. Approved records receive permanent public URLs, Highwire/Google Scholar metadata, structured ScholarlyArticle data, author profiles, public PDF delivery when a rights-cleared PDF is supplied, and automatic sitemap inclusion. Repository publication does not guarantee Google Scholar indexing, citations or academic impact.
 
 Lecturer Agent Hub external actions are disabled by default. Grades, portal uploads, grant submissions, student feedback, journal submissions, profile updates and APER/EAA claims require a recorded lecturer decision. A recorded approval marks a package ready for a separately configured integration; it does not bypass institutional authorization or submit anything by itself.
 
