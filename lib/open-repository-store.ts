@@ -4,8 +4,18 @@ import type { RepositorySubmissionInput } from "@/lib/open-repository";
 import { normalizeDoi, normalizeOrcid, researcherSlug, workSlug } from "@/lib/open-repository";
 
 function escapeRegex(value: string) {
+  return value.replace(/[.*+?^$()|[\]\\]/g, "\\function escapeRegex(value: string) {
   return value.replace(/[.*+?^$()|[\]\\]/g, "\\$&");
 }
+");
+}
+
+export type RepositoryPdfRecord = {
+  fileData?: Buffer;
+  fileName?: string;
+  mimeType?: string;
+  sizeBytes?: number;
+};
 
 export async function upsertRepositoryResearcher(input: RepositorySubmissionInput) {
   await connectMongoDB();
@@ -103,7 +113,7 @@ export async function getPublishedWork(slug: string) {
 
 export async function getPublishedResearcher(slug: string) {
   await connectMongoDB();
-  const researcher = await RepositoryResearcher.findOne({ slug }).lean();
+  const researcher = await RepositoryResearcher.findOne({ slug }).lean() as any;
   if (!researcher) return null;
 
   const works = await RepositoryWork.find({ researcherId: researcher._id, status: "APPROVED" })
@@ -114,11 +124,11 @@ export async function getPublishedResearcher(slug: string) {
   return JSON.parse(JSON.stringify({ researcher, works }));
 }
 
-export async function getPublishedPdf(slug: string) {
+export async function getPublishedPdf(slug: string): Promise<RepositoryPdfRecord | null> {
   await connectMongoDB();
-  return RepositoryWork.findOne({ slug, status: "APPROVED", mimeType: "application/pdf" })
+  return await RepositoryWork.findOne({ slug, status: "APPROVED", mimeType: "application/pdf" })
     .select("+fileData fileName mimeType sizeBytes")
-    .lean();
+    .lean() as unknown as RepositoryPdfRecord | null;
 }
 
 export async function listPendingRepositoryWorks(limit = 100) {
@@ -161,11 +171,11 @@ export async function moderateRepositoryWork(input: {
   return work;
 }
 
-export async function getPendingRepositoryPdf(id: string) {
+export async function getPendingRepositoryPdf(id: string): Promise<RepositoryPdfRecord | null> {
   await connectMongoDB();
-  return RepositoryWork.findOne({ _id: id, status: "SUBMITTED", mimeType: "application/pdf" })
+  return await RepositoryWork.findOne({ _id: id, status: "SUBMITTED", mimeType: "application/pdf" })
     .select("+fileData fileName mimeType sizeBytes")
-    .lean();
+    .lean() as unknown as RepositoryPdfRecord | null;
 }
 
 export async function getRepositorySitemapEntries() {
