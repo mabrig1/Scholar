@@ -33,7 +33,7 @@ const repositoryWorkSchema = new Schema(
     abstract: { type: String, required: true },
     keywords: { type: [String], default: [] },
     journal: { type: String, default: "" },
-    doi: { type: String, default: undefined, index: true },
+    doi: { type: String, default: undefined },
     externalUrl: { type: String, default: "" },
     license: { type: String, default: "" },
     rightsStatement: { type: String, default: "" },
