@@ -22,6 +22,7 @@ const orderSchema = new Schema({
   userId: { type: Schema.Types.ObjectId, ref: "MabrigUser", required: true },
   serviceId: { type: Schema.Types.ObjectId, ref: "MabrigService", required: true },
   referralCode: { type: String, default: null, index: true },
+  attributionToken: { type: String, default: null, maxlength: 2048 },
   status: { type: String, default: "NEW" },
   documentTitle: { type: String, default: null },
   instructions: { type: String, required: true },
@@ -90,6 +91,9 @@ const paymentSchema = new Schema({
   orderId: { type: Schema.Types.ObjectId, ref: "MabrigOrder", unique: true, required: true },
   reference: { type: String, unique: true, required: true, index: true },
   amount: { type: Number, required: true },
+  customerEmail: { type: String, default: null, lowercase: true, trim: true, maxlength: 254 },
+  attributionToken: { type: String, default: null, maxlength: 2048 },
+  growthConversionReportedAt: { type: Date, default: null },
   status: { type: String, enum: ["PENDING", "PAID", "FAILED", "REFUNDED"], default: "PENDING" },
   paidAt: Date,
 }, { timestamps: true });
