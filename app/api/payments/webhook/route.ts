@@ -2,6 +2,7 @@ import { createHmac } from "crypto";
 import { NextResponse } from "next/server";
 import { connectMongoDB } from "@/lib/mongodb";
 import { Order, Payment } from "@/lib/models";
+import { reportMabrigConversion } from "@/lib/mabrig-growth";
 
 export const runtime = "nodejs";
 
@@ -21,9 +22,32 @@ export async function POST(request: Request) {
     const payment = await Payment.findOne({ reference });
     if (payment && amount === payment.amount * 100) {
       payment.status = "PAID";
-      payment.paidAt = new Date();
+      payment.paidAt = new Date(event.data?.paid_at || Date.now());
       await payment.save();
-      await Order.findByIdAndUpdate(payment.orderId, { status: "PAID" });
+      const order = await Order.findByIdAndUpdate(
+        payment.orderId,
+        { status: "PAID" },
+        { new: true }
+      ).select("orderNumber");
+
+      if (!payment.growthConversionReportedAt && payment.customerEmail) {
+        const report = await reportMabrigConversion({
+          id: `scholar:paystack:${payment.reference}`,
+          type: "purchase",
+          email: payment.customerEmail,
+          amount: payment.amount,
+          currency: String(event.data?.currency || "NGN"),
+          attributionToken: payment.attributionToken || undefined,
+          product: "Mabrig Researcher Pro Academic Service",
+          reference: order?.orderNumber || payment.reference,
+          occurredAt: payment.paidAt.toISOString(),
+          source: "scholar:paystack",
+        });
+        if (report.reported) {
+          payment.growthConversionReportedAt = new Date();
+          await payment.save();
+        }
+      }
     }
   }
   return NextResponse.json({ received: true });
