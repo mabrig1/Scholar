@@ -5,6 +5,7 @@ import { calculateQuote } from "@/lib/pricing";
 import { extractDocumentText } from "@/lib/extract-document-text";
 import { parseDocumentTransformationMode } from "@/lib/ai-document-transform";
 import { notifyAdminOfOrder } from "@/lib/order-notifications";
+import { reportMabrigConversion } from "@/lib/mabrig-growth";
 import {
   formToggleEnabled,
   parseBodyAlignment,
@@ -222,6 +223,23 @@ export async function POST(request: Request) {
         console.error("Unable to record admin notification status", error);
       }
     });
+
+    if (email) {
+      after(async () => {
+        await reportMabrigConversion({
+          id: `scholar:quote:${orderNumber}`,
+          type: "quote_request",
+          email,
+          amount: quotedAmount,
+          currency: "NGN",
+          attributionToken: attributionToken || undefined,
+          product: serviceName,
+          reference: orderNumber,
+          occurredAt: order.createdAt?.toISOString?.() || new Date().toISOString(),
+          source: "scholar:order",
+        });
+      });
+    }
 
     return NextResponse.json({
       ok: true,
