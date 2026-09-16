@@ -18,8 +18,25 @@ export async function POST(request: Request) {
 
     const reference = `MAB-${order.orderNumber}-${Date.now()}`;
     const callbackUrl = `${process.env.NEXT_PUBLIC_APP_URL || new URL(request.url).origin}/payment/callback`;
-    const payment = await initializePaystack({ email, amountNaira: order.quotedAmount, reference, callbackUrl });
-    await Payment.findOneAndUpdate({ orderId: order._id }, { orderId: order._id, reference, amount: order.quotedAmount, status: "PENDING" }, { upsert: true, new: true, setDefaultsOnInsert: true });
+    const payment = await initializePaystack({
+      email,
+      amountNaira: order.quotedAmount,
+      reference,
+      callbackUrl,
+      attributionToken: order.attributionToken || undefined,
+    });
+    await Payment.findOneAndUpdate(
+      { orderId: order._id },
+      {
+        orderId: order._id,
+        reference,
+        amount: order.quotedAmount,
+        customerEmail: String(email).trim().toLowerCase(),
+        attributionToken: order.attributionToken || null,
+        status: "PENDING",
+      },
+      { upsert: true, new: true, setDefaultsOnInsert: true }
+    );
     order.status = "AWAITING_PAYMENT";
     await order.save();
     return NextResponse.json({ ok: true, authorizationUrl: payment.authorization_url, reference });
