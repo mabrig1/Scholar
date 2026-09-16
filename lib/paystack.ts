@@ -1,4 +1,4 @@
-export async function initializePaystack(input: { email: string; amountNaira: number; reference: string; callbackUrl: string }) {
+export async function initializePaystack(input: { email: string; amountNaira: number; reference: string; callbackUrl: string; attributionToken?: string }) {
   const secret = process.env.PAYSTACK_SECRET_KEY;
   if (!secret) throw new Error("PAYSTACK_SECRET_KEY is not configured");
 
@@ -10,7 +10,10 @@ export async function initializePaystack(input: { email: string; amountNaira: nu
       amount: Math.round(input.amountNaira * 100),
       reference: input.reference,
       callback_url: input.callbackUrl,
-      metadata: { orderReference: input.reference },
+      metadata: {
+        orderReference: input.reference,
+        ...(input.attributionToken ? { mabrig_attribution: input.attributionToken } : {}),
+      },
     }),
     cache: "no-store",
   });
