@@ -28,9 +28,25 @@ export default function AcademicPrintOrderForm({ compact = false }: { compact?: 
   const [referralCode, setReferralCode] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [documentTitle, setDocumentTitle] = useState("");
+  const [attributionToken, setAttributionToken] = useState("");
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
+    const incomingAttribution = (params.get("mabrig_attribution") || "").trim();
+    const storedAttribution =
+      window.sessionStorage.getItem("mabrig_attribution_v1") ||
+      window.localStorage.getItem("mabrig_attribution_v1") ||
+      "";
+    const token = incomingAttribution || storedAttribution;
+    if (
+      token.length >= 20 &&
+      token.length <= 2048 &&
+      /^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/.test(token)
+    ) {
+      setAttributionToken(token);
+      window.sessionStorage.setItem("mabrig_attribution_v1", token);
+      window.localStorage.setItem("mabrig_attribution_v1", token);
+    }
     const fromUrl = (params.get("ref") || "").trim().slice(0, 64);
     const saved = window.sessionStorage.getItem("mabrig_referral_code") || "";
     const code = fromUrl || saved;
@@ -220,6 +236,7 @@ export default function AcademicPrintOrderForm({ compact = false }: { compact?: 
 
         <label className="field full"><span>{transformationMode === "write-assignment" ? "Assignment question, requirements and deadline" : humanizeMode ? "Humanizing instructions / preferred tone / deadline" : "Instructions / deadline"}</span><textarea name="instructions" required placeholder={transformationMode === "write-assignment" ? "Enter the complete assignment question, lecturer's requirements, course context, deadline and any verified sources to use." : humanizeMode ? "Optional: tell us the preferred tone, audience and deadline. The service improves natural wording and flow without changing evidence or claiming to bypass AI detection." : "Tell us your deadline and any special formatting, conversion or printing instructions."} /></label>
         <input type="hidden" name="referralCode" value={referralCode} />
+        <input type="hidden" name="mabrig_attribution" value={attributionToken} />
       </div>
 
       {humanizeMode && <div className="notice" style={{marginTop:16}}><strong>Article Rewriter & Humanizer:</strong> rewrites sentence structure and wording for smoother, more natural reading while preserving meaning, facts, figures, quotations, citations and references. It is an editing service, not a guarantee of any AI-detector result.</div>}
