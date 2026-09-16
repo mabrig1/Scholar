@@ -56,6 +56,13 @@ export async function POST(request: Request) {
     const instructions = String(form.get("instructions") || "").trim();
     const pastedContent = String(form.get("pastedContent") || "").trim();
     const referralCode = String(form.get("referralCode") || "").trim().slice(0, 64) || null;
+    const rawAttribution = String(form.get("mabrig_attribution") || "").trim();
+    const attributionToken =
+      rawAttribution.length >= 20 &&
+      rawAttribution.length <= 2048 &&
+      /^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/.test(rawAttribution)
+        ? rawAttribution
+        : null;
     const rawPrintOption = String(form.get("printOption") || "");
     const rawPrintType = String(form.get("printType") || "");
     const rawBinding = String(form.get("binding") || "");
@@ -142,6 +149,7 @@ export async function POST(request: Request) {
       userId: user._id,
       serviceId: service._id,
       referralCode,
+      attributionToken,
       documentTitle,
       instructions,
       pastedContent: documentText || null,
