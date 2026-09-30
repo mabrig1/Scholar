@@ -7,6 +7,7 @@ import {
   parseThesisHumanizationGoal,
 } from "@/lib/noun-chapter-humanizer";
 import { analyzeThesisStyle, auditRewriteIntegrity } from "@/lib/thesis-style-audit";
+import { contentLengthTooLarge, rateLimit } from "@/lib/security";
 
 export const runtime = "nodejs";
 export const maxDuration = 300;
@@ -19,6 +20,9 @@ function clean(value: unknown, max: number) {
 
 export async function POST(request: Request) {
   try {
+    const limited = rateLimit(request, "humanizer", 8, 10 * 60_000);
+    if (limited) return limited;
+    if (contentLengthTooLarge(request, 1_000_000)) return NextResponse.json({ error: "Request is too large." }, { status: 413 });
     const body = await request.json() as Record<string, unknown>;
     const text = clean(body.text, MAX_CHARS + 1);
     const chapter = parseNounChapterNumber(body.chapter);
