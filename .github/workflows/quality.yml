@@ -22,18 +22,8 @@ jobs:
           cache: npm
       - name: Install dependencies
         run: npm ci
-      - name: Prepare patched framework dependency
-        run: npm install next@15.5.26 --save-exact --ignore-scripts
-      - name: Upload patched dependency manifests
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
-        with:
-          name: scholar-patched-dependencies
-          path: |
-            package.json
-            package-lock.json
-          retention-days: 1
-      - name: Dependency audit report
-        run: npm audit --json || true
+      - name: Dependency vulnerability gate
+        run: npm audit --audit-level=high
       - name: Typecheck
         run: npm run typecheck
       - name: Tests
