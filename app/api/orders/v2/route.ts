@@ -7,7 +7,7 @@ import { extractDocumentText } from "@/lib/extract-document-text";
 import { parseDocumentTransformationMode } from "@/lib/ai-document-transform";
 import { notifyAdminOfOrder } from "@/lib/order-notifications";
 import { reportMabrigConversion } from "@/lib/mabrig-growth";
-import { LEGAL_VERSION, rateLimit, safeFileName, validEmail } from "@/lib/security";
+import { contentLengthTooLarge, LEGAL_VERSION, rateLimit, safeFileName, validEmail } from "@/lib/security";
 import {
   formToggleEnabled,
   parseBodyAlignment,
@@ -62,6 +62,7 @@ export async function POST(request: Request) {
   try {
     const limited = rateLimit(request, "orders:create", 8, 10 * 60_000);
     if (limited) return limited;
+    if (contentLengthTooLarge(request, 6_000_000)) return NextResponse.json({ error: "Request is too large." }, { status: 413 });
 
     await connectMongoDB();
     const form = await request.formData();
