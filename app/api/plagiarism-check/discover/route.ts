@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { discoverAcademicSources } from "@/lib/academic-source-discovery";
+import { contentLengthTooLarge, rateLimit } from "@/lib/security";
 
 export const runtime = "nodejs";
 export const maxDuration = 30;
@@ -28,6 +29,8 @@ async function runDiscovery(rawValue: string) {
 
 export async function GET(request: Request) {
   try {
+    const limited = rateLimit(request, "plagiarism:discover:get", 20, 10 * 60_000);
+    if (limited) return limited;
     const url = new URL(request.url);
     return await runDiscovery(String(url.searchParams.get("q") || ""));
   } catch (error) {
@@ -38,6 +41,9 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
+    const limited = rateLimit(request, "plagiarism:discover:post", 12, 10 * 60_000);
+    if (limited) return limited;
+    if (contentLengthTooLarge(request, 100_000)) return NextResponse.json({ error: "Request is too large." }, { status: 413 });
     const body = await request.json() as { text?: string; query?: string };
     return await runDiscovery(String(body.query || body.text || ""));
   } catch (error) {
