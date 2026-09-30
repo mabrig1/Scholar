@@ -1,5 +1,6 @@
 import { createHash } from "node:crypto";
 import { NextResponse } from "next/server";
+import { contentLengthTooLarge, rateLimit } from "@/lib/security";
 import { compareAgainstCorpus } from "@/lib/plagiarism-detector";
 import { connectMongoDB } from "@/lib/mongodb";
 import { CorpusSource, IntegrityScan } from "@/lib/integrity-corpus";
@@ -75,6 +76,9 @@ function addCorpusRows(sources: CleanSource[], rows: CorpusRow[]) {
 
 export async function POST(request: Request) {
   try {
+    const limited = rateLimit(request, "plagiarism:check", 8, 10 * 60_000);
+    if (limited) return limited;
+    if (contentLengthTooLarge(request, 1_000_000)) return NextResponse.json({ error: "Request is too large." }, { status: 413 });
     const body = await request.json() as {
       text?: string;
       fileName?: string;
