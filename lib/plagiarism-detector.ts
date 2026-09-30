@@ -166,7 +166,7 @@ function coveredWordCount(
 }
 
 function stripReferences(text: string) {
-  const match = /(?:^|\n)\s*(references|bibliography|works cited)\s*\n/i.exec(text);
+  const match = text.match(/(?:^|\n)\s*(references|bibliography|works cited)\s*\n/i);
   if (!match || match.index < 0) return { body: text, excluded: 0 };
   const references = text.slice(match.index);
   return { body: text.slice(0, match.index), excluded: words(references).length };
