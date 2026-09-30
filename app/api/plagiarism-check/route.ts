@@ -151,12 +151,11 @@ export async function POST(request: Request) {
           if (!rows.length) {
             const filter: Record<string, unknown> = { publicComparisonAllowed: true };
             if (institution) filter.institution = institution;
-            rows = await CorpusSource.find(filter)
+            rows = (await CorpusSource.find(filter)
               .select("title text url")
               .sort({ createdAt: -1 })
               .limit(MAX_PUBLIC_CORPUS_SOURCES)
-              .lean()
-               as unknown as CorpusRow[];
+              .lean()) as unknown as CorpusRow[];
             corpusSelectionMode = "recent";
           }
           addCorpusRows(sources, rows);
