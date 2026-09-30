@@ -1,3 +1,4 @@
+import { randomInt } from "node:crypto";
 import { after, NextResponse } from "next/server";
 import { connectMongoDB } from "@/lib/mongodb";
 import { Delivery, Order, OrderFile, Service, User } from "@/lib/models";
@@ -6,6 +7,7 @@ import { extractDocumentText } from "@/lib/extract-document-text";
 import { parseDocumentTransformationMode } from "@/lib/ai-document-transform";
 import { notifyAdminOfOrder } from "@/lib/order-notifications";
 import { reportMabrigConversion } from "@/lib/mabrig-growth";
+import { LEGAL_VERSION, rateLimit, safeFileName, validEmail } from "@/lib/security";
 import {
   formToggleEnabled,
   parseBodyAlignment,
@@ -32,6 +34,18 @@ type BindingType = "NONE" | "SPIRAL" | "SOFT" | "HARD";
 const PRINT_OPTIONS: readonly PrintOption[] = ["DIGITAL_ONLY", "PRINT_ONLY", "DIGITAL_AND_PRINT", "DIGITAL_PRINT_DELIVERY"];
 const PRINT_TYPES: readonly PrintType[] = ["BLACK_WHITE", "COLOUR"];
 const BINDINGS: readonly BindingType[] = ["NONE", "SPIRAL", "SOFT", "HARD"];
+const ALLOWED_SERVICES = new Set([
+  "Academic Document Printing",
+  "Assignment & Term-Paper Support",
+  "Article Rewriter & Humanizer",
+  "UNN Undergraduate Project Formatting",
+  "Project & Thesis Formatting",
+  "Research Assistance",
+  "Data Analysis Assistance",
+  "Printing & Binding",
+]);
+const ALLOWED_FORMATS = new Set(["DOCX", "PDF", "PPTX", "OTHER"]);
+const ALLOWED_EXTENSIONS = new Set([".txt", ".md", ".pdf", ".doc", ".docx", ".ppt", ".pptx", ".xls", ".xlsx"]);
 const ALLOWED_FILE_TYPES = new Set([
   "text/plain",
   "text/markdown",
@@ -46,15 +60,18 @@ const ALLOWED_FILE_TYPES = new Set([
 
 export async function POST(request: Request) {
   try {
+    const limited = rateLimit(request, "orders:create", 8, 10 * 60_000);
+    if (limited) return limited;
+
     await connectMongoDB();
     const form = await request.formData();
-    const name = String(form.get("name") || "").trim();
-    const whatsapp = String(form.get("whatsapp") || "").trim();
-    const email = String(form.get("email") || "").trim().toLowerCase() || null;
-    const department = String(form.get("department") || "").trim() || null;
-    const serviceName = String(form.get("service") || "").trim();
+    const name = String(form.get("name") || "").trim().slice(0, 120);
+    const whatsapp = String(form.get("whatsapp") || "").trim().slice(0, 40);
+    const email = String(form.get("email") || "").trim().toLowerCase().slice(0, 254) || null;
+    const department = String(form.get("department") || "").trim().slice(0, 200) || null;
+    const serviceName = String(form.get("service") || "").trim().slice(0, 120);
     const documentTitle = String(form.get("documentTitle") || "").trim().slice(0, 200) || null;
-    const instructions = String(form.get("instructions") || "").trim();
+    const instructions = String(form.get("instructions") || "").trim().slice(0, 12_000);
     const pastedContent = String(form.get("pastedContent") || "").trim();
     const referralCode = String(form.get("referralCode") || "").trim().slice(0, 64) || null;
     const rawAttribution = String(form.get("mabrig_attribution") || "").trim();
@@ -72,9 +89,10 @@ export async function POST(request: Request) {
     const copies = Math.max(1, Math.min(100, Number(form.get("copies") || 1)));
     const pages = Number(form.get("pages") || 0);
     const binding: BindingType = BINDINGS.includes(rawBinding as BindingType) ? rawBinding as BindingType : "NONE";
-    const deliveryLocation = String(form.get("deliveryLocation") || "").trim();
-    const deliveryNote = String(form.get("deliveryNote") || "").trim();
-    const requestedFormat = String(form.get("requestedFormat") || "DOCX").trim();
+    const deliveryLocation = String(form.get("deliveryLocation") || "").trim().slice(0, 120);
+    const deliveryNote = String(form.get("deliveryNote") || "").trim().slice(0, 500);
+    const rawRequestedFormat = String(form.get("requestedFormat") || "DOCX").trim().toUpperCase();
+    const requestedFormat = ALLOWED_FORMATS.has(rawRequestedFormat) ? rawRequestedFormat : "DOCX";
     const formatPreset = parseFormatPreset(form.get("formatPreset"));
     const spacing = formatPreset === "unn" ? "2.0" : parseDocumentLineSpacing(form.get("spacing"));
     const font = String(form.get("font") || "Times New Roman").trim();
@@ -99,10 +117,19 @@ export async function POST(request: Request) {
     const widowOrphanControl = formToggleEnabled(form, "widowOrphanControl");
     const file = form.get("file");
     const hasFile = file instanceof File && file.size > 0;
+    const legalAccepted = form.get("legalAccepted") === "on";
+    const aiProcessingConsent = form.get("aiProcessingConsent") === "on";
+    const marketingOptIn = form.get("marketingOptIn") === "on";
     const writeAssignmentRequested = transformationMode === "write-assignment";
     const assignmentBriefReady = Boolean(writeAssignmentRequested && documentTitle && instructions);
 
     if (!name || !whatsapp || !serviceName || !instructions) return NextResponse.json({ error: "Please complete all required fields." }, { status: 400 });
+    if (!legalAccepted) return NextResponse.json({ error: "Accept the Terms of Use and Privacy Policy before submitting." }, { status: 400 });
+    if (!ALLOWED_SERVICES.has(serviceName)) return NextResponse.json({ error: "Select a valid service." }, { status: 400 });
+    const phoneDigits = whatsapp.replace(/\D/g, "");
+    if (phoneDigits.length < 10 || phoneDigits.length > 15) return NextResponse.json({ error: "Enter a valid WhatsApp number." }, { status: 400 });
+    if (email && !validEmail(email)) return NextResponse.json({ error: "Enter a valid email address." }, { status: 400 });
+    if (transformationMode !== "format" && !aiProcessingConsent) return NextResponse.json({ error: "AI-assisted services require explicit processing consent." }, { status: 400 });
     if (!Number.isInteger(pages) || pages < 1 || pages > MAX_PAGES) return NextResponse.json({ error: `Page count must be between 1 and ${MAX_PAGES} pages.` }, { status: 400 });
     if (!Number.isFinite(fontSize) || fontSize < 8 || fontSize > 30) return NextResponse.json({ error: "Font size must be between 8 and 30pt." }, { status: 400 });
     if (printOption === "DIGITAL_PRINT_DELIVERY" && !deliveryLocation) return NextResponse.json({ error: "Choose a delivery location." }, { status: 400 });
@@ -112,7 +139,11 @@ export async function POST(request: Request) {
 
     if (hasFile) {
       if (file.size > MAX_FILE_BYTES) return NextResponse.json({ error: "Uploads must be 4MB or smaller. Compress the file, split large attachments, or paste the text instead." }, { status: 413 });
-      if (file.type && !ALLOWED_FILE_TYPES.has(file.type)) return NextResponse.json({ error: "Unsupported file type. Upload TXT, PDF, Word, PowerPoint or Excel." }, { status: 400 });
+      const lowerName = file.name.toLowerCase();
+      const extension = lowerName.includes(".") ? lowerName.slice(lowerName.lastIndexOf(".")) : "";
+      if ((file.type && !ALLOWED_FILE_TYPES.has(file.type)) || !ALLOWED_EXTENSIONS.has(extension)) {
+        return NextResponse.json({ error: "Unsupported file type. Upload TXT, Markdown, PDF, Word, PowerPoint or Excel." }, { status: 400 });
+      }
     }
 
     let documentText = pastedContent;
@@ -138,11 +169,11 @@ export async function POST(request: Request) {
     }
 
     const service = await Service.findOneAndUpdate({ name: serviceName }, { $setOnInsert: { name: serviceName } }, { upsert: true, new: true });
-    const userSet: Record<string, unknown> = { name, optedIn: true };
+    const userSet: Record<string, unknown> = { name, optedIn: marketingOptIn };
     if (email) userSet.email = email;
     if (department) userSet.department = department;
     const user = await User.findOneAndUpdate({ whatsapp }, { $set: userSet }, { upsert: true, new: true, setDefaultsOnInsert: true });
-    const orderNumber = `MAB-${new Date().toISOString().slice(0, 10).replaceAll("-", "")}-${Math.floor(10000 + Math.random() * 90000)}`;
+    const orderNumber = `MAB-${new Date().toISOString().slice(0, 10).replaceAll("-", "")}-${randomInt(10000, 100000)}`;
     const quotedAmount = calculateQuote({ service: serviceName, printOption, printType, copies, pages, binding, delivery: printOption === "DIGITAL_PRINT_DELIVERY" });
 
     const order = await Order.create({
@@ -185,6 +216,11 @@ export async function POST(request: Request) {
       referenceStyle,
       removeEmptyParagraphs,
       widowOrphanControl,
+      legalAcceptedAt: new Date(),
+      termsVersion: LEGAL_VERSION,
+      privacyVersion: LEGAL_VERSION,
+      submissionRightsConfirmed: true,
+      aiProcessingConsent: transformationMode === "format" ? false : aiProcessingConsent,
       adminNotifications: {
         whatsapp: process.env.WHATSAPP_ACCESS_TOKEN && process.env.WHATSAPP_PHONE_NUMBER_ID ? "pending" : "not_configured",
         telegram: process.env.TELEGRAM_BOT_TOKEN && process.env.TELEGRAM_ADMIN_CHAT_ID ? "pending" : "not_configured",
@@ -195,7 +231,7 @@ export async function POST(request: Request) {
     if (hasFile) {
       submittedFile = {
         data: Buffer.from(await file.arrayBuffer()),
-        fileName: file.name,
+        fileName: safeFileName(file.name),
         mimeType: file.type || "application/octet-stream",
       };
       await OrderFile.create({
