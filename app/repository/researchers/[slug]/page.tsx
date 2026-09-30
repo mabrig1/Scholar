@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { normalizeOrcid } from "@/lib/open-repository";
 import { getPublishedResearcher } from "@/lib/open-repository-store";
+import { safeJsonLd } from "@/lib/security";
 import styles from "../../repository.module.css";
 
 export const dynamic = "force-dynamic";
@@ -103,7 +104,7 @@ export default async function RepositoryResearcherPage({ params }: Props) {
           </article>
         </section>
 
-        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+        <script type="application/ld+json">{safeJsonLd(jsonLd)}</script>
       </div>
     </main>
   );
