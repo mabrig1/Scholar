@@ -27,6 +27,7 @@ export type RepositorySubmissionInput = {
   license?: string;
   rightsStatement?: string;
   rightsConfirmed: boolean;
+  legalAccepted: boolean;
 };
 
 export type RepositoryReadiness = {
@@ -90,12 +91,13 @@ export function assessRepositorySubmission(input: RepositorySubmissionInput): Re
   if (!Number.isInteger(input.year) || input.year < 1500 || input.year > new Date().getFullYear() + 1) blockers.push("Publication year is invalid.");
   if (clean(input.abstract).length < 80) blockers.push("Provide a complete author-written abstract of at least 80 characters.");
   if (!input.rightsConfirmed) blockers.push("The depositor must confirm the right to make the submitted metadata/file publicly available.");
+  if (!input.legalAccepted) blockers.push("Accept the repository licence, Terms of Use and Privacy Policy.");
   if (!clean(input.rightsStatement)) warnings.push("Add a rights statement or publisher/self-archiving basis before approval.");
   if (!clean(input.license)) warnings.push("No reuse licence was supplied; the repository should display rights as reserved/unspecified.");
   if (!normalizeDoi(input.doi)) warnings.push("No DOI supplied. A DOI is helpful for record matching but is not mandatory.");
   if (!normalizeOrcid(input.orcid)) warnings.push("No ORCID supplied. ORCID is recommended for author disambiguation.");
 
-  const max = 8;
+  const max = 9;
   const complete = [
     clean(input.fullName).length >= 3,
     clean(input.affiliation).length >= 2,
@@ -105,6 +107,7 @@ export function assessRepositorySubmission(input: RepositorySubmissionInput): Re
     Number.isInteger(input.year) && input.year >= 1500 && input.year <= new Date().getFullYear() + 1,
     clean(input.abstract).length >= 80,
     input.rightsConfirmed,
+    input.legalAccepted,
   ].filter(Boolean).length;
 
   return {
