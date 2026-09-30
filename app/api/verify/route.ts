@@ -1,9 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { findCrossrefJournals, searchOpenAlexSources, verifyCrossrefIssn } from "@/lib/journals";
+import { rateLimit } from "@/lib/security";
 
 export const runtime = "nodejs";
 
 export async function GET(request: NextRequest) {
+  const limited = rateLimit(request, "journal:verify", 30, 10 * 60_000);
+  if (limited) return limited;
   const title = (request.nextUrl.searchParams.get("title") ?? "").trim();
   const issn = (request.nextUrl.searchParams.get("issn") ?? "").trim();
 
