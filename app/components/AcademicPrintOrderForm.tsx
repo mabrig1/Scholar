@@ -150,7 +150,7 @@ export default function AcademicPrintOrderForm({ compact = false }: { compact?: 
           <select name="transformationMode" value={transformationMode} onChange={event => setTransformationMode(event.target.value)}>
             <option value="format">Format only — reliable, no AI required</option>
             <option value="proofread">Proofread &amp; improve clarity (AI)</option>
-            <option value="write-assignment">Write Assignment from topic &amp; instructions (AI)</option>
+            <option value="write-assignment">Assignment Planning &amp; Draft Support (AI)</option>
             <option value="rewrite-assignment">Article Rewriter &amp; Humanizer — natural rewrite (AI)</option>
           </select>
         </label>
