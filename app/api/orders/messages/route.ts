@@ -2,6 +2,7 @@ import { after, NextResponse } from "next/server";
 import { connectMongoDB } from "@/lib/mongodb";
 import { Order, OrderMessage, User } from "@/lib/models";
 import { notifyAdminOfClientMessage } from "@/lib/order-notifications";
+import { rateLimit } from "@/lib/security";
 
 export const runtime = "nodejs";
 
@@ -15,6 +16,8 @@ function phoneCandidates(value: string) {
 
 export async function POST(request: Request) {
   try {
+    const limited = rateLimit(request, "orders:message", 15, 10 * 60_000);
+    if (limited) return limited;
     const body = await request.json().catch(() => ({}));
     const orderNumber = String(body.orderNumber || "").trim().toUpperCase().slice(0, 64);
     const whatsapp = String(body.whatsapp || "").trim().slice(0, 40);
