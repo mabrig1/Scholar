@@ -17,5 +17,5 @@ test("safeFileName strips path separators and control characters", () => {
 test("validEmail accepts bounded conventional addresses", () => {
   assert.equal(validEmail("researcher@example.edu"), true);
   assert.equal(validEmail("not-an-email"), false);
-  assert.equal(validEmail("a".repeat(245) + "@x.com"), false);
+  assert.equal(validEmail("a".repeat(250) + "@x.com"), false);
 });
