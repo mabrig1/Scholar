@@ -13,6 +13,7 @@ import {
   WidthType,
 } from "docx";
 import { attachmentContentDisposition, safeAttachmentFilename } from "@/lib/download-filename";
+import { contentLengthTooLarge, rateLimit } from "@/lib/security";
 
 export const runtime = "nodejs";
 
@@ -54,6 +55,9 @@ function tableCell(value: string, bold = false) {
 
 export async function POST(request: Request) {
   try {
+    const limited = rateLimit(request, "chapter-four:word", 12, 10 * 60_000);
+    if (limited) return limited;
+    if (contentLengthTooLarge(request, 2_000_000)) return NextResponse.json({ error: "Request is too large." }, { status: 413 });
     const payload = await request.json() as ReportPayload;
     const studyTitle = text(payload.studyTitle, 180) || "Thesis Study";
     const analysisTitle = text(payload.analysisTitle, 220);
