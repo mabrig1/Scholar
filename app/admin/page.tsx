@@ -96,7 +96,7 @@ function label(value?: string) {
 }
 
 function aiActionLabel(mode?: string) {
-  if (mode === "write-assignment") return "Write Assignment";
+  if (mode === "write-assignment") return "Assignment Draft Support";
   if (mode === "rewrite" || mode === "rewrite-assignment") return "Rewrite Assignment";
   return "Proofread Assignment";
 }
