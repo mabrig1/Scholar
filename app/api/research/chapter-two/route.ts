@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { generateWithAiFallback } from "@/lib/ai-provider";
+import { contentLengthTooLarge, rateLimit } from "@/lib/security";
 import {
   apa7Reference,
   buildChapterTwoOutline,
@@ -55,6 +56,9 @@ async function verifyDoi(value: unknown): Promise<ScholarlyArticle | null> {
 
 export async function POST(request: Request) {
   try {
+    const limited = rateLimit(request, "research:chapter-two", 8, 10 * 60_000);
+    if (limited) return limited;
+    if (contentLengthTooLarge(request, 200_000)) return NextResponse.json({ error: "Request is too large." }, { status: 413 });
     const body = await request.json() as Record<string, unknown>;
     const topic = clean(body.topic, 300);
     const concepts = clean(body.concepts, 600);
