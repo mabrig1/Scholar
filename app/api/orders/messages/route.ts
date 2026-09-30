@@ -29,13 +29,13 @@ export async function POST(request: Request) {
 
     await connectMongoDB();
 
-    const userResult = await User.findOne({ whatsapp: { $in: phoneCandidates(whatsapp) } }).lean().exec();
+    const userResult = await User.findOne({ whatsapp: { $in: phoneCandidates(whatsapp) } }).lean();
     const user = userResult as { _id: unknown; name?: string; whatsapp?: string } | null;
     if (!user) {
       return NextResponse.json({ error: "Order not found. Check the order number and WhatsApp number used during submission." }, { status: 404 });
     }
 
-    const orderResult = await Order.findOne({ orderNumber, userId: user._id }).lean().exec();
+    const orderResult = await Order.findOne({ orderNumber, userId: user._id }).lean();
     const order = orderResult as { _id: unknown; orderNumber?: string; status?: string } | null;
     if (!order) {
       return NextResponse.json({ error: "Order not found. Check the order number and WhatsApp number used during submission." }, { status: 404 });
