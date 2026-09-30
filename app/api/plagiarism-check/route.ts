@@ -118,7 +118,7 @@ export async function POST(request: Request) {
                     institution: options.institution,
                     publicOnly: true,
                   });
-                  const docs = await CorpusSource.aggregate(pipeline).exec();
+                  const docs = await CorpusSource.aggregate(pipeline);
                   return docs.map((doc: Record<string, unknown>) => ({
                     id: String(doc._id),
                     title: String(doc.title || "Scholar corpus source"),
@@ -152,7 +152,7 @@ export async function POST(request: Request) {
               .sort({ createdAt: -1 })
               .limit(MAX_PUBLIC_CORPUS_SOURCES)
               .lean()
-              .exec() as unknown as CorpusRow[];
+               as unknown as CorpusRow[];
             corpusSelectionMode = "recent";
           }
           addCorpusRows(sources, rows);
