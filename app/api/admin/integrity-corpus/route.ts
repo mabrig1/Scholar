@@ -27,7 +27,7 @@ export async function GET() {
       CorpusSource.distinct("institution", { institution: { $nin: [null, ""] } }),
       CorpusSource.countDocuments(MISSING_EMBEDDING_FILTER),
     ]);
-    const latest = await CorpusSource.find().select("title sourceType institution author year publicComparisonAllowed createdAt metadata").sort({ createdAt: -1 }).limit(50).lean().exec();
+    const latest = await CorpusSource.find().select("title sourceType institution author year publicComparisonAllowed createdAt metadata").sort({ createdAt: -1 }).limit(50).lean();
     return NextResponse.json({ total, submissions, embedded, missingEmbeddings, publicSources, institutions: institutions.length, latest }, { headers: { "Cache-Control": "private, no-store" } });
   } catch (error) {
     console.error("Integrity corpus summary failed", error);
@@ -46,7 +46,7 @@ export async function POST(request: Request) {
         return NextResponse.json({ error: "Embedding provider is not configured. Add HF_TOKEN (or HUGGINGFACE_API_KEY) and the integrity embedding settings first." }, { status: 503 });
       }
 
-      const source = await CorpusSource.findOne(MISSING_EMBEDDING_FILTER).select("+embedding").sort({ createdAt: 1, _id: 1 }).exec();
+      const source = await CorpusSource.findOne(MISSING_EMBEDDING_FILTER).select("+embedding").sort({ createdAt: 1, _id: 1 });
       if (!source) {
         return NextResponse.json({ ok: true, backfilled: false, remaining: 0, message: "All retained corpus sources already have embeddings." });
       }
@@ -130,7 +130,7 @@ export async function POST(request: Request) {
 
     // Deduplicate by content fingerprint. If the document was retained earlier while
     // embeddings were unavailable, a later re-upload can safely backfill its embedding.
-    const existing = await CorpusSource.findOne({ fingerprint }).select("+embedding").exec();
+    const existing = await CorpusSource.findOne({ fingerprint }).select("+embedding");
     const existingEmbedding = existing && Array.isArray(existing.embedding) ? existing.embedding : [];
     if (existing && existingEmbedding.length > 0) {
       return NextResponse.json({

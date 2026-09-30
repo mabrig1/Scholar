@@ -1,0 +1,80 @@
+name: DevShield Security Audit
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
+jobs:
+  devshield:
+    name: DevShield strict repository audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout full history
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          fetch-depth: 0
+
+      - name: Run MABRIG DevShield AI
+        id: devshield
+        uses: mabrig1/mabrig-devshield-ai@973e44a09122b5a281b2e70cf22639cbd8dc0e20
+        with:
+          github-token: ${{ github.token }}
+          policy: strict
+          scan-scope: repository
+          fail-on: high
+          dependency-review: auto
+          dependency-severity: low
+          agentic-mode: plan
+          remediation-mode: propose
+          dependency-agentic: on
+          security-graph: on
+          control-plane: on
+          security-history: on
+          regression-gate: report
+          risk-exceptions: off
+          comment: true
+          max-files: 500
+          sarif: true
+
+      - name: Upload DevShield evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: scholar-devshield-report
+          path: .devshield
+          if-no-files-found: warn
+          retention-days: 14
+
+      - name: Security summary
+        if: always()
+        env:
+          FINDINGS: ${{ steps.devshield.outputs.findings-count }}
+          NEW_FINDINGS: ${{ steps.devshield.outputs.new-findings }}
+          DEP_FINDINGS: ${{ steps.devshield.outputs.dependency-findings }}
+          RISK_SCORE: ${{ steps.devshield.outputs.risk-score }}
+          RISK_LEVEL: ${{ steps.devshield.outputs.risk-level }}
+          SCANNED_FILES: ${{ steps.devshield.outputs.scanned-files }}
+          AGENTIC_STATE: ${{ steps.devshield.outputs.agentic-state }}
+          AGENTIC_TASKS: ${{ steps.devshield.outputs.agentic-tasks }}
+          ATTACK_PATHS: ${{ steps.devshield.outputs.agentic-attack-paths }}
+        run: |
+          {
+            echo "## Scholar DevShield audit"
+            echo "- Scanned files: ${SCANNED_FILES:-unknown}"
+            echo "- Findings: ${FINDINGS:-unknown} (new ${NEW_FINDINGS:-unknown})"
+            echo "- Dependency findings: ${DEP_FINDINGS:-unknown}"
+            echo "- Risk: ${RISK_LEVEL:-unknown} (${RISK_SCORE:-unknown}/100)"
+            echo "- Agentic mission: ${AGENTIC_STATE:-unknown}"
+            echo "- Remediation tasks: ${AGENTIC_TASKS:-0}"
+            echo "- Attack-path hypotheses: ${ATTACK_PATHS:-0}"
+            echo "- Merge gate: HIGH/CRITICAL deterministic findings fail"
+          } >> "$GITHUB_STEP_SUMMARY"

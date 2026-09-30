@@ -45,6 +45,7 @@ export async function upsertRepositoryResearcher(input: RepositorySubmissionInpu
 export async function createRepositorySubmission(
   input: RepositorySubmissionInput,
   file?: { name: string; type: string; size: number; data: Buffer },
+  legal?: { legalAcceptedAt: Date; termsVersion: string; privacyVersion: string },
 ) {
   const researcher = await upsertRepositoryResearcher(input);
   const slug = workSlug(input);
@@ -76,6 +77,9 @@ export async function createRepositorySubmission(
     license: (input.license || "").trim(),
     rightsStatement: (input.rightsStatement || "").trim(),
     rightsConfirmed: input.rightsConfirmed,
+    legalAcceptedAt: legal?.legalAcceptedAt || null,
+    termsVersion: legal?.termsVersion || null,
+    privacyVersion: legal?.privacyVersion || null,
     fileName: file?.name || "",
     mimeType: file?.type || "",
     sizeBytes: file?.size || 0,

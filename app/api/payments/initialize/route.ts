@@ -2,14 +2,19 @@ import { NextResponse } from "next/server";
 import { connectMongoDB } from "@/lib/mongodb";
 import { Order, Payment } from "@/lib/models";
 import { initializePaystack } from "@/lib/paystack";
+import { rateLimit, validEmail } from "@/lib/security";
 
 export const runtime = "nodejs";
 
 export async function POST(request: Request) {
   try {
+    const limited = rateLimit(request, "payments:initialize", 10, 10 * 60_000);
+    if (limited) return limited;
     await connectMongoDB();
-    const { orderNumber, email } = await request.json();
-    if (!orderNumber || !email) return NextResponse.json({ error: "Order number and email are required." }, { status: 400 });
+    const body = await request.json().catch(() => ({}));
+    const orderNumber = String(body.orderNumber || "").trim().toUpperCase().slice(0, 64);
+    const email = String(body.email || "").trim().toLowerCase().slice(0, 254);
+    if (!/^MAB-\d{8}-\d{5}$/.test(orderNumber) || !validEmail(email)) return NextResponse.json({ error: "A valid order number and email are required." }, { status: 400 });
     const order = await Order.findOne({ orderNumber });
     if (!order) return NextResponse.json({ error: "Order not found." }, { status: 404 });
     if (!order.quotedAmount) return NextResponse.json({ error: "This order has not been quoted yet." }, { status: 409 });

@@ -6,6 +6,7 @@ import {
   type RepositoryWorkType,
 } from "@/lib/open-repository";
 import { createRepositorySubmission } from "@/lib/open-repository-store";
+import { LEGAL_VERSION, rateLimit, safeFileName, validEmail } from "@/lib/security";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -26,6 +27,9 @@ function field(form: FormData, name: string) {
 
 export async function POST(request: NextRequest) {
   try {
+    const limited = rateLimit(request, "repository:submit", 5, 15 * 60_000);
+    if (limited) return limited;
+
     const form = await request.formData();
     const workType = field(form, "workType") as RepositoryWorkType;
 
@@ -52,7 +56,12 @@ export async function POST(request: NextRequest) {
       license: field(form, "license"),
       rightsStatement: field(form, "rightsStatement"),
       rightsConfirmed: field(form, "rightsConfirmed") === "true",
+      legalAccepted: field(form, "legalAccepted") === "true",
     };
+
+    if (!validEmail(input.contactEmail)) {
+      return NextResponse.json({ error: "Enter a valid moderation email address." }, { status: 400 });
+    }
 
     const readiness = assessRepositorySubmission(input);
     if (!readiness.readyForReview) {
@@ -75,11 +84,15 @@ export async function POST(request: NextRequest) {
           { status: 413 },
         );
       }
+      const data = Buffer.from(await uploaded.arrayBuffer());
+      if (!data.subarray(0, 1024).includes(Buffer.from("%PDF-"))) {
+        return NextResponse.json({ error: "The uploaded file does not appear to be a valid PDF." }, { status: 400 });
+      }
       file = {
-        name: uploaded.name.slice(0, 180),
+        name: safeFileName(uploaded.name),
         type: uploaded.type,
         size: uploaded.size,
-        data: Buffer.from(await uploaded.arrayBuffer()),
+        data,
       };
     }
 
@@ -99,7 +112,11 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    const work = await createRepositorySubmission(input, file);
+    const work = await createRepositorySubmission(input, file, {
+      legalAcceptedAt: new Date(),
+      termsVersion: LEGAL_VERSION,
+      privacyVersion: LEGAL_VERSION,
+    });
     return NextResponse.json(
       {
         ok: true,

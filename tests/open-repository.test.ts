@@ -31,6 +31,7 @@ const complete: RepositorySubmissionInput = {
   license: "CC BY 4.0",
   rightsStatement: "Author is permitted to deposit this open-access version.",
   rightsConfirmed: true,
+  legalAccepted: true,
 };
 
 test("repository readiness accepts a complete rights-safe submission", () => {

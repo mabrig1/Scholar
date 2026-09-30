@@ -18,6 +18,7 @@ export default function RepositorySubmitClient() {
       const formElement = event.currentTarget;
       const form = new FormData(formElement);
       form.set("rightsConfirmed", form.get("rightsConfirmed") ? "true" : "false");
+      form.set("legalAccepted", form.get("legalAccepted") ? "true" : "false");
       const response = await fetch("/api/repository/submit", { method: "POST", body: form });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || "Submission failed.");
@@ -148,6 +149,16 @@ export default function RepositorySubmitClient() {
           <strong>I confirm that I am authorized to deposit this metadata and the supplied file/link.</strong>
           <span className={styles.help}>
             Do not upload a publisher PDF where the publisher or licence prohibits repository sharing.
+          </span>
+        </span>
+      </label>
+
+      <label className={styles.check}>
+        <input name="legalAccepted" type="checkbox" required />
+        <span>
+          <strong>I accept the repository licence, Terms of Use and Privacy Policy.</strong>
+          <span className={styles.help}>
+            Approved metadata and rights-cleared content may become publicly accessible. See <a href="/terms" target="_blank" rel="noreferrer">Terms</a> and <a href="/privacy" target="_blank" rel="noreferrer">Privacy</a>.
           </span>
         </span>
       </label>

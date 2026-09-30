@@ -3,14 +3,18 @@ import { connectMongoDB } from "@/lib/mongodb";
 import { Order, Payment } from "@/lib/models";
 import { verifyPaystack } from "@/lib/paystack";
 import { reportMabrigConversion } from "@/lib/mabrig-growth";
+import { rateLimit } from "@/lib/security";
 
 export const runtime = "nodejs";
 
 export async function POST(request: Request) {
   try {
+    const limited = rateLimit(request, "payments:verify", 20, 10 * 60_000);
+    if (limited) return limited;
     await connectMongoDB();
-    const { reference } = await request.json();
-    if (!reference) return NextResponse.json({ error: "Payment reference is required." }, { status: 400 });
+    const body = await request.json().catch(() => ({}));
+    const reference = String(body.reference || "").trim().slice(0, 160);
+    if (!/^MAB-[A-Za-z0-9_-]{8,150}$/.test(reference)) return NextResponse.json({ error: "Valid payment reference is required." }, { status: 400 });
     const result = await verifyPaystack(reference);
     const payment = await Payment.findOne({ reference });
     if (!payment) return NextResponse.json({ error: "Payment record not found." }, { status: 404 });

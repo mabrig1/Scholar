@@ -187,8 +187,7 @@ function decodeEntities(value: string) {
 function parseAttributes(tag: string) {
   const attrs: Record<string, string> = {};
   const regex = /([:\w.-]+)\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]+))/g;
-  let match: RegExpExecArray | null;
-  while ((match = regex.exec(tag))) {
+  for (const match of tag.matchAll(regex)) {
     attrs[match[1].toLowerCase()] = decodeEntities(match[2] ?? match[3] ?? match[4] ?? "").trim();
   }
   return attrs;

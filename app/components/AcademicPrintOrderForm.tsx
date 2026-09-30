@@ -112,7 +112,8 @@ export default function AcademicPrintOrderForm({ compact = false }: { compact?: 
     <form onSubmit={submit}>
       <div className="form-grid">
         <label className="field"><span>Name</span><input name="name" required placeholder="Your name" /></label>
-        <label className="field"><span>WhatsApp number</span><input name="whatsapp" required inputMode="tel" placeholder="080..." /></label>
+        <label className="field"><span>WhatsApp number</span><input name="whatsapp" required inputMode="tel" maxLength={40} placeholder="080..." /></label>
+        <label className="field"><span>Email (optional)</span><input name="email" type="email" maxLength={254} placeholder="you@example.com" /></label>
 
         <label className="field full"><span>Document title / assignment topic</span><input name="documentTitle" value={documentTitle} onChange={(event) => setDocumentTitle(event.target.value)} required={transformationMode === "write-assignment"} maxLength={200} placeholder="e.g. The Impact of E-Governance on Service Delivery" /></label>
 
@@ -149,7 +150,7 @@ export default function AcademicPrintOrderForm({ compact = false }: { compact?: 
           <select name="transformationMode" value={transformationMode} onChange={event => setTransformationMode(event.target.value)}>
             <option value="format">Format only — reliable, no AI required</option>
             <option value="proofread">Proofread &amp; improve clarity (AI)</option>
-            <option value="write-assignment">Write Assignment from topic &amp; instructions (AI)</option>
+            <option value="write-assignment">Assignment Planning &amp; Draft Support (AI)</option>
             <option value="rewrite-assignment">Article Rewriter &amp; Humanizer — natural rewrite (AI)</option>
           </select>
         </label>
@@ -242,6 +243,24 @@ export default function AcademicPrintOrderForm({ compact = false }: { compact?: 
       {humanizeMode && <div className="notice" style={{marginTop:16}}><strong>Article Rewriter & Humanizer:</strong> rewrites sentence structure and wording for smoother, more natural reading while preserving meaning, facts, figures, quotations, citations and references. It is an editing service, not a guarantee of any AI-detector result.</div>}
       <div className="notice" style={{marginTop:16}}><strong>UNN Undergraduate Project format:</strong> Times New Roman 12pt, <strong>2.0 double spacing</strong>, justified body paragraphs, academic heading hierarchy and hanging reference entries. To use 1.0 or 1.5 spacing, choose Custom academic format.</div>
       <div className="notice" style={{marginTop:10}}>Academic integrity: AI drafts and rewrites must be reviewed, fact-checked and adapted by the student or author. The system preserves supplied evidence and does not invent citations or references.</div>
+
+      <div className="field full check-row" style={{marginTop:16}}>
+        <label>
+          <input name="legalAccepted" type="checkbox" required />
+          I have read and accept the <a href="/terms" target="_blank" rel="noreferrer">Terms of Use</a> and <a href="/privacy" target="_blank" rel="noreferrer">Privacy Policy</a>, and I confirm I am authorized to submit the material provided.
+        </label>
+        {transformationMode !== "format" && (
+          <label>
+            <input name="aiProcessingConsent" type="checkbox" required />
+            I authorize the relevant text and instructions to be processed by the configured AI provider for this requested AI-assisted service.
+          </label>
+        )}
+        <label>
+          <input name="marketingOptIn" type="checkbox" />
+          I would like to receive optional research-service updates and offers. I can opt out later.
+        </label>
+      </div>
+
       <button className="btn primary" style={{marginTop:16}} type="submit" disabled={submitting}>{submitting ? "Preparing conversion..." : humanizeMode ? "Rewrite, Humanize & Convert to Word" : "Submit, Format & Convert to Word"}</button>
       {message && <p className="form-message" aria-live="polite">{message}</p>}
       {message.includes("Order ") && <a className="btn whatsapp" style={{marginTop:8}} target="_blank" rel="noreferrer" href="https://wa.me/2347065342818?text=Hello%20Mabrig%20ICT%2C%20I%20have%20submitted%20an%20academic%20document%20conversion%20and%20printing%20order%20on%20the%20website.%20Please%20help%20me%20continue%20with%20the%20order.">Continue on WhatsApp</a>}
