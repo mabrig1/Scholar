@@ -78,9 +78,14 @@ function isAllowedBrowserOrigin(request: NextRequest) {
 }
 
 export async function middleware(request: NextRequest) {
+  const webhookPath =
+    request.nextUrl.pathname === "/api/payments/webhook" ||
+    request.nextUrl.pathname.startsWith("/api/webhooks/");
+
   if (
     request.nextUrl.pathname.startsWith("/api/") &&
     isStateChanging(request.method) &&
+    !webhookPath &&
     !isAllowedBrowserOrigin(request)
   ) {
     return forbidden(request);
