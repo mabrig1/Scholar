@@ -1,5 +1,5 @@
 import {NextRequest,NextResponse} from "next/server";
-import {listProperties,submitSitemap,getSitemaps} from "../../../../lib/search-console";
+import {listProperties,submitSitemap,getSitemaps} from "../../../lib/search-console";
 export const runtime="nodejs";
 export async function POST(req:NextRequest){
  // Disabled until Scholar has an authenticated user session and encrypted per-user OAuth token storage.
