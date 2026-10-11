@@ -8,6 +8,8 @@ const principles = [
   ["No guaranteed acceptance", "Journal editors and reviewers make independent decisions. A readiness score or journal match is decision support, not an acceptance probability."],
   ["Privacy by design", "The manuscript workspace is stored in the user's browser. Submitted orders are sent only when the user deliberately completes the submission form."],
   ["Human oversight", "Complex formatting, editing and publication work can be escalated to a human reviewer. Automated output should never be treated as final without inspection."],
+  ["Authorship and academic honesty", "Our tools support legitimate editing, language improvement, formatting and researcher-led analysis. They must not be used to fabricate research, disguise contract cheating, evade academic integrity checks or misrepresent who conducted or wrote the work."],
+  ["Human-assisted services", "Paid assistance does not transfer responsibility for original research or authorship. Researchers must review, approve and disclose assistance when required by institutional or journal policies."],
   ["Secure administration", "Administrative routes require deployment-configured credentials. Secrets belong in protected environment settings and are never committed to the repository."],
 ];
 
