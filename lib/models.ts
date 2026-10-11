@@ -7,7 +7,7 @@ const userSchema = new Schema({
   department: { type: String, default: null },
   level: { type: String, default: null },
   role: { type: String, enum: ["STUDENT", "ADMIN", "WORKER", "RIDER"], default: "STUDENT" },
-  optedIn: { type: Boolean, default: true },
+  optedIn: { type: Boolean, default: false },
 }, { timestamps: true });
 
 const serviceSchema = new Schema({
@@ -66,6 +66,11 @@ const orderSchema = new Schema({
     telegram: { type: String, enum: ["pending", "sent", "failed", "not_configured"], default: "not_configured" },
   },
   lastClientMessageAt: { type: Date, default: null },
+  legalAcceptedAt: { type: Date, default: null },
+  termsVersion: { type: String, default: null, maxlength: 32 },
+  privacyVersion: { type: String, default: null, maxlength: 32 },
+  submissionRightsConfirmed: { type: Boolean, default: false },
+  aiProcessingConsent: { type: Boolean, default: false },
 }, { timestamps: true });
 
 const orderMessageSchema = new Schema({

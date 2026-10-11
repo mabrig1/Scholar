@@ -5,6 +5,7 @@ import {
   reconstructOpenAlexAbstract,
   type ScholarlyArticle,
 } from "@/lib/scholarly-articles";
+import { rateLimit } from "@/lib/security";
 
 export const runtime = "nodejs";
 
@@ -43,6 +44,8 @@ async function enrichFromOpenAlex(article: ScholarlyArticle) {
 
 export async function GET(request: NextRequest) {
   try {
+    const limited = rateLimit(request, "research:articles", 30, 10 * 60_000);
+    if (limited) return limited;
     const query = request.nextUrl.searchParams.get("q")?.trim() || "";
     const currentYear = new Date().getUTCFullYear();
     const fromYear = Math.max(1900, Math.min(currentYear, Number(request.nextUrl.searchParams.get("from")) || currentYear - 5));

@@ -1,11 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { runResearchMission } from "@/lib/agentic-research";
+import { contentLengthTooLarge, rateLimit } from "@/lib/security";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
 
 export async function POST(request: NextRequest) {
   try {
+    const limited = rateLimit(request, "research:agent", 10, 10 * 60_000);
+    if (limited) return limited;
+    if (contentLengthTooLarge(request, 150_000)) return NextResponse.json({ error: "Request is too large." }, { status: 413 });
     const body = await request.json();
     const mission = await runResearchMission({
       topic: body.topic,

@@ -16,6 +16,7 @@ import {
 } from "@/lib/document-format-options";
 import { buildAcademicWordDocument } from "@/lib/word-document";
 import { attachmentContentDisposition, safeAttachmentFilename } from "@/lib/download-filename";
+import { contentLengthTooLarge, rateLimit } from "@/lib/security";
 
 export const runtime = "nodejs";
 
@@ -24,6 +25,9 @@ const MAX_AI_DRAFT_PAGES = 20;
 
 export async function POST(request: Request) {
   try {
+    const limited = rateLimit(request, "format:word", 10, 10 * 60_000);
+    if (limited) return limited;
+    if (contentLengthTooLarge(request, 1_500_000)) return NextResponse.json({ error: "Request is too large." }, { status: 413 });
     const form = await request.formData();
     const text = String(form.get("text") || "").trim();
     const title = String(form.get("title") || "Academic Document").trim() || "Academic Document";

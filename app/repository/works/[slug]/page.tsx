@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { buildRepositoryHighwireMeta, normalizeDoi, repositoryJsonLd } from "@/lib/open-repository";
 import { getPublishedWork } from "@/lib/open-repository-store";
+import { safeJsonLd } from "@/lib/security";
 import styles from "../../repository.module.css";
 
 export const dynamic = "force-dynamic";
@@ -126,7 +127,7 @@ export default async function RepositoryWorkPage({ params }: Props) {
           </aside>
         </section>
 
-        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+        <script type="application/ld+json">{safeJsonLd(jsonLd)}</script>
       </div>
     </main>
   );

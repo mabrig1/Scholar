@@ -1,9 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { searchOpenAlexSources } from "@/lib/journals";
+import { rateLimit } from "@/lib/security";
 
 export const runtime = "nodejs";
 
 export async function GET(request: NextRequest) {
+  const limited = rateLimit(request, "journals:search", 30, 10 * 60_000);
+  if (limited) return limited;
   const params = request.nextUrl.searchParams;
   const q = params.get("q") ?? "";
   const access = params.get("access") ?? "all";

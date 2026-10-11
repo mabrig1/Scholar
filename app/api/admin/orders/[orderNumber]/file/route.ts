@@ -16,11 +16,11 @@ export async function GET(_request: Request, context: RouteContext) {
     if (!orderNumber) return NextResponse.json({ error: "Order number is required." }, { status: 400 });
 
     await connectMongoDB();
-    const result = await Order.findOne({ orderNumber }).select("_id").lean().exec();
+    const result = await Order.findOne({ orderNumber }).select("_id").lean();
     const order = result as unknown as { _id: unknown } | null;
     if (!order) return NextResponse.json({ error: "Order not found." }, { status: 404 });
 
-    const file = await OrderFile.findOne({ orderId: order._id }).select("+data fileName mimeType").exec();
+    const file = await OrderFile.findOne({ orderId: order._id }).select("+data fileName mimeType");
     if (!file) return NextResponse.json({ error: "No submitted file is attached to this order." }, { status: 404 });
     if (!file.data?.length) {
       return NextResponse.json(

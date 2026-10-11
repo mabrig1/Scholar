@@ -62,15 +62,15 @@ export async function GET(request: Request, context: RouteContext) {
     if (!orderNumber) return NextResponse.json({ error: "Order number is required." }, { status: 400 });
 
     await connectMongoDB();
-    const result = await Order.findOne({ orderNumber }).lean().exec();
+    const result = await Order.findOne({ orderNumber }).lean();
     const order = result as OrderDoc | null;
     if (!order) return NextResponse.json({ error: "Order not found." }, { status: 404 });
 
     const text = order.pastedContent?.trim() || "";
 
     const [userResult, serviceResult] = await Promise.all([
-      User.findById(order.userId).lean().exec(),
-      Service.findById(order.serviceId).lean().exec(),
+      User.findById(order.userId).lean(),
+      Service.findById(order.serviceId).lean(),
     ]);
 
     const user = userResult as { name?: string } | null;

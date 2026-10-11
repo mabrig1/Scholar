@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { generateWithAiFallback } from "@/lib/ai-provider";
 import { buildPublishingPlan, type PublishingAgentInput } from "@/lib/publishing-agent";
+import { contentLengthTooLarge, rateLimit } from "@/lib/security";
 
 export const runtime = "nodejs";
 
@@ -26,6 +27,9 @@ function normalizeInput(body: Record<string, unknown>): PublishingAgentInput {
 
 export async function POST(request: NextRequest) {
   try {
+    const limited = rateLimit(request, "publishing-agent", 10, 10 * 60_000);
+    if (limited) return limited;
+    if (contentLengthTooLarge(request, 120_000)) return NextResponse.json({ error: "Request is too large." }, { status: 413 });
     const input = normalizeInput(await request.json());
     if (!input.title || input.title.length < 12) {
       return NextResponse.json({ error: "Enter a clear manuscript title of at least 12 characters." }, { status: 400 });

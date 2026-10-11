@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { generateWithAiFallback } from "@/lib/ai-provider";
 import { normalizeOpenAlexSource, type Journal } from "@/lib/journals";
+import { contentLengthTooLarge, rateLimit } from "@/lib/security";
 
 export const runtime = "nodejs";
 
@@ -61,6 +62,9 @@ Return concise sections: Readiness diagnosis, Best-fit candidates (rank 3-5 with
 
 export async function POST(request: NextRequest) {
   try {
+    const limited = rateLimit(request, "assistant", 12, 10 * 60_000);
+    if (limited) return limited;
+    if (contentLengthTooLarge(request, 150_000)) return NextResponse.json({ error: "Request is too large." }, { status: 413 });
     const body = await request.json();
     const title = String(body.title ?? "").trim();
     const abstract = String(body.abstract ?? "").trim();

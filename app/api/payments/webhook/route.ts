@@ -1,4 +1,4 @@
-import { createHmac } from "crypto";
+import { createHmac, timingSafeEqual } from "crypto";
 import { NextResponse } from "next/server";
 import { connectMongoDB } from "@/lib/mongodb";
 import { Order, Payment } from "@/lib/models";
@@ -9,13 +9,27 @@ export const runtime = "nodejs";
 export async function POST(request: Request) {
   const secret = process.env.PAYSTACK_SECRET_KEY;
   if (!secret) return NextResponse.json({ error: "Paystack is not configured." }, { status: 500 });
+  const contentLength = Number(request.headers.get("content-length") || 0);
+  if (Number.isFinite(contentLength) && contentLength > 1_000_000) return NextResponse.json({ error: "Webhook payload is too large." }, { status: 413 });
+
   const raw = await request.text();
+  if (raw.length > 1_000_000) return NextResponse.json({ error: "Webhook payload is too large." }, { status: 413 });
+
   const signature = request.headers.get("x-paystack-signature") || "";
   const expected = createHmac("sha512", secret).update(raw).digest("hex");
-  if (signature !== expected) return NextResponse.json({ error: "Invalid signature." }, { status: 401 });
+  const validSignature =
+    /^[a-f0-9]{128}$/i.test(signature) &&
+    timingSafeEqual(Buffer.from(signature, "hex"), Buffer.from(expected, "hex"));
+  if (!validSignature) return NextResponse.json({ error: "Invalid signature." }, { status: 401 });
+
+  let event: any;
+  try {
+    event = JSON.parse(raw);
+  } catch {
+    return NextResponse.json({ error: "Invalid webhook payload." }, { status: 400 });
+  }
 
   await connectMongoDB();
-  const event = JSON.parse(raw);
   if (event.event === "charge.success") {
     const reference = String(event.data?.reference || "");
     const amount = Number(event.data?.amount || 0);

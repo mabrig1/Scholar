@@ -1,5 +1,6 @@
 import { createHash } from "node:crypto";
 import { NextResponse } from "next/server";
+import { contentLengthTooLarge, rateLimit } from "@/lib/security";
 import { compareAgainstCorpus } from "@/lib/plagiarism-detector";
 import { connectMongoDB } from "@/lib/mongodb";
 import { CorpusSource, IntegrityScan } from "@/lib/integrity-corpus";
@@ -75,6 +76,9 @@ function addCorpusRows(sources: CleanSource[], rows: CorpusRow[]) {
 
 export async function POST(request: Request) {
   try {
+    const limited = rateLimit(request, "plagiarism:check", 8, 10 * 60_000);
+    if (limited) return limited;
+    if (contentLengthTooLarge(request, 1_000_000)) return NextResponse.json({ error: "Request is too large." }, { status: 413 });
     const body = await request.json() as {
       text?: string;
       fileName?: string;
@@ -118,7 +122,7 @@ export async function POST(request: Request) {
                     institution: options.institution,
                     publicOnly: true,
                   });
-                  const docs = await CorpusSource.aggregate(pipeline).exec();
+                  const docs = await CorpusSource.aggregate(pipeline);
                   return docs.map((doc: Record<string, unknown>) => ({
                     id: String(doc._id),
                     title: String(doc.title || "Scholar corpus source"),
@@ -147,12 +151,11 @@ export async function POST(request: Request) {
           if (!rows.length) {
             const filter: Record<string, unknown> = { publicComparisonAllowed: true };
             if (institution) filter.institution = institution;
-            rows = await CorpusSource.find(filter)
+            rows = (await CorpusSource.find(filter)
               .select("title text url")
               .sort({ createdAt: -1 })
               .limit(MAX_PUBLIC_CORPUS_SOURCES)
-              .lean()
-              .exec() as unknown as CorpusRow[];
+              .lean()) as unknown as CorpusRow[];
             corpusSelectionMode = "recent";
           }
           addCorpusRows(sources, rows);

@@ -1,11 +1,15 @@
 import { NextResponse } from "next/server";
 import { attachmentContentDisposition, safeAttachmentFilename } from "@/lib/download-filename";
 import { buildAcademicWordDocument } from "@/lib/word-document";
+import { contentLengthTooLarge, rateLimit } from "@/lib/security";
 
 export const runtime = "nodejs";
 
 export async function POST(request: Request) {
   try {
+    const limited = rateLimit(request, "chapter-two:word", 12, 10 * 60_000);
+    if (limited) return limited;
+    if (contentLengthTooLarge(request, 600_000)) return NextResponse.json({ error: "Request is too large." }, { status: 413 });
     const body = await request.json() as Record<string, unknown>;
     const topic = String(body.topic ?? "Chapter Two").trim().slice(0, 220) || "Chapter Two";
     const draft = String(body.draft ?? "").trim();

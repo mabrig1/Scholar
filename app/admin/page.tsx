@@ -96,7 +96,7 @@ function label(value?: string) {
 }
 
 function aiActionLabel(mode?: string) {
-  if (mode === "write-assignment") return "Write Assignment";
+  if (mode === "write-assignment") return "Assignment Draft Support";
   if (mode === "rewrite" || mode === "rewrite-assignment") return "Rewrite Assignment";
   return "Proofread Assignment";
 }
@@ -153,12 +153,12 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
 
   const orderIds = orders.map(order => order._id);
   const [userResults, serviceResults, paymentResults, fileResults, deliveryResults, messageResults] = await Promise.all([
-    User.find({ _id: { $in: orders.map(order => order.userId).filter(Boolean) } }).lean().exec(),
-    Service.find({ _id: { $in: orders.map(order => order.serviceId).filter(Boolean) } }).lean().exec(),
-    Payment.find({ orderId: { $in: orderIds } }).lean().exec(),
-    OrderFile.find({ orderId: { $in: orderIds } }).lean().exec(),
-    Delivery.find({ orderId: { $in: orderIds } }).lean().exec(),
-    OrderMessage.find({ orderId: { $in: orderIds }, sender: "CLIENT" }).sort({ createdAt: -1 }).lean().exec(),
+    User.find({ _id: { $in: orders.map(order => order.userId).filter(Boolean) } }).lean(),
+    Service.find({ _id: { $in: orders.map(order => order.serviceId).filter(Boolean) } }).lean(),
+    Payment.find({ orderId: { $in: orderIds } }).lean(),
+    OrderFile.find({ orderId: { $in: orderIds } }).lean(),
+    Delivery.find({ orderId: { $in: orderIds } }).lean(),
+    OrderMessage.find({ orderId: { $in: orderIds }, sender: "CLIENT" }).sort({ createdAt: -1 }).lean(),
   ]);
   const usersById = new Map((userResults as unknown as Exclude<UserRow, null>[]).map(item => [String(item._id), item]));
   const servicesById = new Map((serviceResults as unknown as Exclude<ServiceRow, null>[]).map(item => [String(item._id), item]));

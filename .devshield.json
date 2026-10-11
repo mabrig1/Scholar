@@ -1,0 +1,29 @@
+{
+  "policy": "strict",
+  "scanScope": "repository",
+  "excludePaths": [
+    ".next/**",
+    "node_modules/**",
+    "coverage/**"
+  ],
+  "ignoreRules": [],
+  "ignoreCategories": [],
+  "severityOverrides": {},
+  "maxFileBytes": 1500000,
+  "inlineSuppressions": true,
+  "dependencyReview": true,
+  "dependencySeverity": "low",
+  "dependencyDenyLicenses": [],
+  "baselineMode": "new-only",
+  "agenticMode": "plan",
+  "remediationMode": "propose",
+  "dependencyAgenticMode": "on",
+  "securityGraphMode": "on",
+  "controlPlaneMode": "on",
+  "securityHistoryMode": "on",
+  "regressionGateMode": "report",
+  "regressionNewRiskSeverity": "high",
+  "regressionExpandedExposure": "warn",
+  "regressionInheritedDebt": "ignore",
+  "riskExceptionsMode": "off"
+}

@@ -40,7 +40,7 @@ export async function GET() {
       .sort({ updatedAt: -1 })
       .limit(50)
       .lean()
-      .exec();
+      ;
     return noStore({ cases });
   } catch (error) {
     console.error("Lecturer Agent Hub cases failed", error);

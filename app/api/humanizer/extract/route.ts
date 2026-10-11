@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { extractDocumentText } from "@/lib/extract-document-text";
+import { contentLengthTooLarge, rateLimit } from "@/lib/security";
 
 export const runtime = "nodejs";
 
@@ -7,6 +8,9 @@ const MAX_BYTES = 4 * 1024 * 1024;
 
 export async function POST(request: Request) {
   try {
+    const limited = rateLimit(request, "humanizer:extract", 10, 10 * 60_000);
+    if (limited) return limited;
+    if (contentLengthTooLarge(request, 5_000_000)) return NextResponse.json({ error: "Request is too large." }, { status: 413 });
     const form = await request.formData();
     const file = form.get("file");
     if (!(file instanceof File) || file.size === 0) return NextResponse.json({ error: "Choose a TXT, Markdown, DOCX or text-based PDF file." }, { status: 400 });
