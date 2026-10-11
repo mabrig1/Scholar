@@ -4,7 +4,7 @@ const tools = [
   {title:"Journal discovery",href:"/publication-gateway",status:"Available",description:"Find candidate journals, inspect author guidelines, and verify indexing and fees with the publisher."},
   {title:"Submission preparation",href:"/submission-workspace",status:"Available",description:"Complete authorship, ethics, indexing and fee checks; copy an author-controlled submission checklist."},
   {title:"Journal integrity",href:"/journalguard",status:"Available",description:"Review journal credibility before submitting or paying any fees."},
-  {title:"DOI and indexing assistant",href:"/doi-indexing",status:"Check availability",description:"Prepare metadata and DOI/indexing workflows. A DOI requires an authorized registration agency."},
+  {title:"DOI and indexing assistant",href:"/indexing-assistant",status:"Check availability",description:"Prepare metadata and DOI/indexing workflows. A DOI requires an authorized registration agency."},
   {title:"Publication sitemap",href:"/indexing-sitemap",status:"Check availability",description:"Prepare discovery metadata and sitemaps for sites you control."},
   {title:"Google Search Console",href:"/search-console",status:"Integration pending",description:"OAuth authorization and server-side user sessions are required before sitemap submission can be enabled."}
 ];
