@@ -45,6 +45,29 @@ jobs:
           max-files: 500
           sarif: true
 
+      - name: Persist DevShield audit summary
+        if: always()
+        env:
+          FINDINGS: ${{ steps.devshield.outputs.findings-count }}
+          NEW_FINDINGS: ${{ steps.devshield.outputs.new-findings }}
+          DEP_FINDINGS: ${{ steps.devshield.outputs.dependency-findings }}
+          RISK_SCORE: ${{ steps.devshield.outputs.risk-score }}
+          RISK_LEVEL: ${{ steps.devshield.outputs.risk-level }}
+          SCANNED_FILES: ${{ steps.devshield.outputs.scanned-files }}
+        run: |
+          mkdir -p .devshield
+          {
+            echo "# Scholar DevShield audit evidence"
+            echo "Run: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+            echo "Commit: $GITHUB_SHA"
+            echo "Findings: ${FINDINGS:-unknown}"
+            echo "New findings: ${NEW_FINDINGS:-unknown}"
+            echo "Dependency findings: ${DEP_FINDINGS:-unknown} (dependency review availability must be checked in logs)"
+            echo "Risk: ${RISK_LEVEL:-unknown} (${RISK_SCORE:-unknown}/100)"
+            echo "Files scanned: ${SCANNED_FILES:-unknown}"
+            echo "Full finding details: review GitHub Actions annotations and job logs."
+          } > .devshield/audit-summary.txt
+
       - name: Upload DevShield evidence
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
