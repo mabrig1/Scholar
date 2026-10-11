@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 export const metadata:Metadata={title:"Scholar Publish Dashboard",description:"Integrity-first journal verification, manuscript readiness and research discoverability."};
 const steps=[
  {name:"Publishing agent",href:"/publishing-agent",detail:"Prepare a manuscript-specific journal pathway and submission plan.",status:"Available"},
+ {name:"Journal Trust Index",href:"/journal-trust-index",detail:"Public evidence-first journal verification and transparent benchmark methodology.",status:"Public preview"},
  {name:"JournalGuard",href:"/journalguard",detail:"Verify journal identity and DOI evidence; independently confirm indexing.",status:"Feature preview"},
  {name:"Publication gateway",href:"/publication-gateway",detail:"Compare candidate journals, author guidelines and fee/waiver considerations.",status:"Feature preview"},
  {name:"Submission workspace",href:"/submission-workspace",detail:"Complete author-controlled ethics, authorship and submission readiness checks.",status:"Feature preview"},
