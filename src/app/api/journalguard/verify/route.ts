@@ -1,47 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { rateLimit } from "@/lib/security";
 import { verifyJournalV3 } from "../../../../lib/journalguard-v3";
+import { parseBoundedJson } from "../../../../lib/journalguard-request";
 
 export const runtime = "nodejs";
 export const maxDuration = 30;
-const MAX_REQUEST_BYTES = 8192;
-type InputError = { code: number; message: string };
 function error(code: number, message: string) {
   return NextResponse.json({ error: message }, { status: code, headers: { "Cache-Control": "no-store" } });
 }
 function isRecord(value: unknown): value is Record<string, unknown> {
   return value !== null && typeof value === "object" && !Array.isArray(value);
-}
-
-/** Bounded stream decoding also works without a Content-Length header. */
-export async function parseBoundedJson(request: Request): Promise<unknown> {
-  const header = request.headers.get("content-length");
-  if (header !== null && (!/^\d+$/.test(header) || Number(header) > MAX_REQUEST_BYTES)) {
-    throw { code: 413, message: "JournalGuard request too large" } satisfies InputError;
-  }
-  const reader = request.body?.getReader();
-  if (!reader) throw { code: 400, message: "Request body required" } satisfies InputError;
-  const parts: Uint8Array[] = [];
-  let total = 0;
-  try {
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
-      total += value.byteLength;
-      if (total > MAX_REQUEST_BYTES) {
-        void reader.cancel();
-        throw { code: 413, message: "JournalGuard request too large" } satisfies InputError;
-      }
-      parts.push(value);
-    }
-  } finally {
-    reader.releaseLock();
-  }
-  try {
-    return JSON.parse(Buffer.concat(parts.map(part => Buffer.from(part))).toString("utf8"));
-  } catch {
-    throw { code: 400, message: "Invalid JSON request" } satisfies InputError;
-  }
 }
 
 export async function POST(request: NextRequest) {
