@@ -1,0 +1,1 @@
+case_id,claim_id,adjudicator_a_label,adjudicator_b_label,gold_label,prediction_label,gold_evidence_url,evidence_accessed_at,gold_evidence_hash,prediction_commit,claim_schema,notes
