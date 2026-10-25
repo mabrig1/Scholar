@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { rateLimit } from "@/lib/security";
+import { journalGuardRateLimit } from "../../../../lib/journalguard-rate-limit";
 import { verifyJournalV3 } from "../../../../lib/journalguard-v3";
 import { parseBoundedJson } from "../../../../lib/journalguard-request";
 
@@ -15,8 +15,9 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 export async function POST(request: NextRequest) {
   // Per-instance limiting is a secondary control; configure a distributed edge/WAF
   // limit independently before exposing this endpoint to unrestricted traffic.
-  const limited = rateLimit(request, "journalguard-verify-v1", 20);
-  if (limited) return limited;
+  const limit = journalGuardRateLimit(request);
+  if (!limit.allowed) return NextResponse.json({ error: "Too many requests" },
+    { status: 429, headers: { "Retry-After": String(limit.retryAfter), "Cache-Control": "no-store" } });
   if (!/^application\/json(?:\s*;|$)/i.test(request.headers.get("content-type") || "")) {
     return error(415, "Content-Type must be application/json");
   }
