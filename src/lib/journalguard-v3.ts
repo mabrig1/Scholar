@@ -1,3 +1,4 @@
+import { buildJournalClaimVector, CLAIM_SCHEMA_VERSION } from "./journalguard-claims";
 import {verifyJournalV2} from "./journalguard-v2";
 import type {JournalCheck,ArticleCheck} from "./journalguard";
 export type ProvenanceFinding={code:string;severity:"info"|"review";message:string;source?:string};
@@ -17,5 +18,5 @@ export async function verifyJournalV3(journal:JournalCheck,article?:ArticleCheck
  const base=await verifyJournalV2(journal,article);
  const provenance=assessPublisherProvenance(journal,domains);
  base.warnings.push(...provenance.filter(x=>x.severity==="review").map(x=>x.message));
- return {...base,provenance,scopusVerification:{journal:"unverified",article:"unverified",reason:"Requires authoritative Scopus source/document records; no indexing assertion is made."},checkedAt:new Date().toISOString()};
+ return {...base,provenance,claimSchema:CLAIM_SCHEMA_VERSION,claims:buildJournalClaimVector(journal,article,base),scopusVerification:{journal:"unverified",article:"unverified",reason:"Requires authoritative Scopus source/document records; no indexing assertion is made."},checkedAt:new Date().toISOString()};
 }
