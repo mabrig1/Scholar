@@ -23,6 +23,8 @@ import {
   type AtlasMethodAppraisalInput, renderMethodAppraisalReport,
 } from "@/packages/evidence-atlas-core/src/method-appraisal";
 import EvidenceMethodAppraisalEditor from "./EvidenceMethodAppraisalEditor";
+import EvidenceAtlasObjectives from "./EvidenceAtlasObjectives";
+import EvidenceAtlasZotero from "./EvidenceAtlasZotero";
 import styles from "./evidence-atlas.module.css";
 
 type SearchResponse = { articles?: SearchArticle[]; count?: number; error?: string; verifiedAt?: string };
@@ -466,6 +468,12 @@ export default function EvidenceAtlasClient() {
               </div>
             </article>
           </section>
+          <EvidenceAtlasZotero project={project}
+            onVerified={(article) => commit((current) => addAtlasPaper(current, article),
+              "Crossref-verified DOI paper added from public Zotero preview.")} />
+          <EvidenceAtlasObjectives project={project}
+            onUpdate={(updated, message) => { setProject(updated); setNotice(message); setError(""); }}
+            onError={(message) => { setError(message); setNotice(""); }} />
           <section className={styles.panel}>
             <span className={styles.eyebrow}>02B · SOURCE-GROUNDED CANDIDATES</span>
             <h2>Propose claims from a saved paper</h2>
