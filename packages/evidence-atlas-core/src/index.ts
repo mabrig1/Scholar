@@ -4,6 +4,8 @@
  * Facts about paper metadata do not constitute verified findings.
  */
 import { isValidMethodAppraisal } from "./method-appraisal";
+import { validObjective } from "./objective-alignment";
+import type { AtlasObjective } from "./objective-alignment";
 import type { AtlasMethodAppraisal } from "./method-appraisal";
 
 export const ATLAS_STORAGE_KEY = "mabrig_evidence_atlas_v1";
@@ -62,6 +64,8 @@ export type AtlasProject = {
   papers: AtlasPaper[];
   claims: AtlasClaim[];
   evidence: AtlasEvidence[];
+  /** Researcher-authored objective alignment; optional on historic v1 backups. */
+  objectives: AtlasObjective[];
   events: AtlasEvent[];
 };
 export type SearchArticle = {
@@ -113,6 +117,7 @@ export function createAtlasProject(title: string, question: string): AtlasProjec
     papers: [],
     claims: [],
     evidence: [],
+    objectives: [],
     events: [event("project-created", "Created evidence map: " + cleanTitle)],
   };
 }
@@ -225,6 +230,13 @@ export function parseAtlasProject(raw: unknown): AtlasProject {
   }
   const claimIds = new Set(base.claims.map((c) => c.id));
   const paperIds = new Set(base.papers.map((p) => p.id));
+  // Backwards compatibility: existing v1 project backups never had objective records.
+  const objectives: unknown[] = raw.objectives === undefined ? [] :
+    Array.isArray(raw.objectives) ? raw.objectives : [null];
+  if (objectives.length > 12 || !objectives.every((objective) => validObjective(objective, claimIds)) ||
+      new Set(objectives.map((x) => (x as AtlasObjective).id)).size !== objectives.length) {
+    throw new Error("The project contains invalid or orphaned research objectives.");
+  }
   const papersById = new Map(base.papers.map((p) => [p.id, p]));
   if (!base.claims.every((c) => {
     if (c.origin === undefined) return true;
@@ -270,6 +282,7 @@ export function parseAtlasProject(raw: unknown): AtlasProject {
     papers: base.papers,
     claims: base.claims,
     evidence: base.evidence,
+    objectives: objectives as AtlasObjective[],
     events: base.events,
   };
 }
