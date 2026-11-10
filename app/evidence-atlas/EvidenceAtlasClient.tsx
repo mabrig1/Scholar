@@ -16,6 +16,7 @@ import {
   type EvidenceStance,
   type SearchArticle,
 } from "@/lib/evidence-atlas";
+import { analyzeAtlasGaps, renderAtlasGapReport } from "@/packages/evidence-atlas-core/src/gap-intelligence";
 import styles from "./evidence-atlas.module.css";
 
 type SearchResponse = { articles?: SearchArticle[]; count?: number; error?: string; verifiedAt?: string };
@@ -114,6 +115,20 @@ function exportProject(project: AtlasProject) {
   link.remove();
   URL.revokeObjectURL(url);
 }
+function downloadGapAudit(project: AtlasProject) {
+  const audit = analyzeAtlasGaps(project);
+  const content = renderAtlasGapReport(project, audit);
+  const blob = new Blob([content], { type: "text/markdown;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement("a");
+  anchor.href = url;
+  anchor.download = "evidence-atlas-gap-audit-" + project.id.slice(0, 8) + ".md";
+  document.body.appendChild(anchor);
+  anchor.click();
+  anchor.remove();
+  URL.revokeObjectURL(url);
+}
+
 export default function EvidenceAtlasClient() {
   const currentYear = new Date().getFullYear();
   const upload = useRef<HTMLInputElement>(null);
@@ -276,6 +291,7 @@ export default function EvidenceAtlasClient() {
     () => project?.evidence.filter((entry) => entry.claimId === selectedClaimId) || [],
     [project, selectedClaimId],
   );
+  const gapAudit = useMemo(() => project ? analyzeAtlasGaps(project) : null, [project]);
   if (!hydrated) return <main className={styles.shell}><p className={styles.loading}>Opening Evidence Atlas…</p></main>;
 
   return (
@@ -403,7 +419,7 @@ export default function EvidenceAtlasClient() {
             <EvidenceGraph project={project} selectedClaimId={selectedClaimId} onClaim={setSelectedClaimId} onPaper={choosePaper} />
           </section>
           <section className={styles.columns}>
-            <article className={styles.panel}>
+            <article className={styles.panel} id="atlas-claim-review">
               <span className={styles.eyebrow}>04 · REVIEW</span><h2>Classify source evidence</h2>
               <p className={styles.muted}>Review the original source. Record its exact passage and whether your assessment is based on an abstract or the full text.</p>
               {selectedClaim && project.papers.length ? (
@@ -458,7 +474,67 @@ export default function EvidenceAtlasClient() {
             </article>
           </section>
           <section className={styles.panel}>
-            <span className={styles.eyebrow}>06 · REPRODUCE</span>
+            <div className={styles.panelHeader}>
+              <div>
+                <span className={styles.eyebrow}>06 · RESEARCH-GAP INTELLIGENCE</span>
+                <h2>Research gaps: what needs further investigation?</h2>
+              </div>
+              <button type="button" className={styles.secondary} onClick={() => downloadGapAudit(project)}>
+                Export source-linked gap audit (.md)
+              </button>
+            </div>
+            <p className={styles.caution}>
+              These are transparent follow-up prompts based only on this project's saved papers and
+              human-entered assessments. They are NOT verified gaps in the published literature,
+              research quality scores or AI-generated findings.
+            </p>
+            {gapAudit && <>
+              <div className={styles.gapSummary}>
+                <div><strong>{gapAudit.totals.assessedPapers} / {gapAudit.totals.papers}</strong><span>Saved sources assessed</span></div>
+                <div><strong>{gapAudit.totals.abstractOnly}</strong><span>Abstract-only links</span></div>
+                <div><strong>{gapAudit.totals.unresolved}</strong><span>Mixed or unclear links</span></div>
+                <div><strong>{gapAudit.totals.searchEvents}</strong><span>Logged searches</span></div>
+              </div>
+              {gapAudit.signals.length === 0 ?
+                <p className={styles.empty}>No local review reminders triggered. This does not establish that the literature is complete or in consensus.</p> :
+                <div className={styles.gapGrid}>
+                  {gapAudit.signals.map((item) => (
+                    <article className={styles.gapCard} key={item.id}>
+                      <div className={styles.gapCardHeading}>
+                        <span className={styles.gapKind}>{item.kind.replace(/-/g, " ")}</span>
+                        <span className={styles.gapPriority}>{item.priority.replace(/-/g, " ")}</span>
+                      </div>
+                      <h3>{item.title}</h3>
+                      <p>{item.observation}</p>
+                      <strong>Question for the researcher</strong>
+                      <p>{item.followUpQuestion}</p>
+                      <strong>Next verification step</strong>
+                      <p>{item.nextStep}</p>
+                      {item.claimId && <button type="button" className={styles.gapInspect}
+                        onClick={() => { setSelectedClaimId(item.claimId || ""); document.getElementById("atlas-claim-review")?.scrollIntoView({ behavior: "smooth" }); }}>
+                        Inspect related claim
+                      </button>}
+                      {item.paperIds.length > 0 && <details className={styles.gapSources}>
+                        <summary>Trace {item.paperIds.length} related source(s)</summary>
+                        <ul>{item.paperIds.map((id) => {
+                          const paper = project.papers.find((source) => source.id === id);
+                          return paper && <li key={id}>
+                            <a href={doiUrl(paper.doi)} target="_blank" rel="noopener noreferrer">{paper.title}</a> ({paper.year})
+                          </li>;
+                        })}</ul>
+                      </details>}
+                      <small>{item.assessmentIds.length} linked evidence records · project-scoped signal</small>
+                    </article>
+                  ))}
+                </div>}
+              <details className={styles.gapCaveats}>
+                <summary>Read scientific and search-coverage limitations</summary>
+                <ul>{gapAudit.caveats.map((caveat) => <li key={caveat}>{caveat}</li>)}</ul>
+              </details>
+            </>}
+          </section>
+          <section className={styles.panel}>
+            <span className={styles.eyebrow}>07 · REPRODUCE</span>
             <h2>Research history</h2>
             <p className={styles.muted}>A local record of project creation, registry searches, saved literature and classification changes. Export your project regularly for a portable backup.</p>
             <ol className={styles.timeline}>
