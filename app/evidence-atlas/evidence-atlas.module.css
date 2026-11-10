@@ -155,3 +155,17 @@
 .proposalCard p{font-size:12px;line-height:1.6;color:#a6bfd6}
 .proposalCard button{margin-top:9px}
 @media(max-width:900px){.proposalGrid{grid-template-columns:1fr}}
+
+/* Methodological context: source-attributed, never a statistical quality score. */
+.methodsSummary{margin-top:14px;border:1px solid #376075;background:#132c40;padding:15px;border-radius:12px}
+.methodsSummary>strong{font-size:13px;color:#9ef2d7}
+.methodsSummary p{margin:7px 0;font-size:12px;line-height:1.55;color:#c8d8e6}
+.methodsSummary .methodsCaveat{color:#f4cd95;border-left:3px solid #be914f;padding-left:9px}
+.methodsSummary button{margin-top:9px}
+.comparability{margin:18px 0;padding:15px;background:#263223;border:1px solid #7c713c;border-radius:13px}
+.comparability h3{font-size:16px;margin:4px 0 10px}
+.comparability>p{font-size:12px;line-height:1.65;color:#f4dfb1}
+.comparabilityItem{padding:12px 0;border-top:1px solid #8071457d;overflow-wrap:anywhere}
+.comparabilityItem strong{font-size:13px;color:#f7ead2}
+.comparabilityItem p{font-size:12px;line-height:1.6;color:#e1d4ba}
+.comparabilityItem small{display:block;color:#c4bca8}
