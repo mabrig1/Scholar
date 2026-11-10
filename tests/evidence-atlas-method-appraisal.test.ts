@@ -5,7 +5,7 @@ import {
 } from "../packages/evidence-atlas-core/src/index";
 import {
   assessAppraisalReadiness, compareOpposingAtlasEvidence,
-  isValidMethodAppraisal, recordMethodAppraisal,
+  isValidMethodAppraisal, recordMethodAppraisal, renderMethodAppraisalReport,
   type AtlasMethodAppraisalInput,
 } from "../packages/evidence-atlas-core/src/method-appraisal";
 
@@ -131,4 +131,17 @@ test("retracted studies cannot create spurious inter-study comparability warning
     locator: "Abstract", notes: "",
   });
   assert.deepEqual(compareOpposingAtlasEvidence(map, map.claims[0].id), []);
+});
+
+
+test("exported methods appendix stays source-traceable and preserves uncertainty", () => {
+  const map = setup("abstract");
+  const appraised = recordMethodAppraisal(map, map.evidence[0].id, appraisal);
+  const report = renderMethodAppraisalReport(appraised, "2026-11-10T14:00:00Z");
+  assert.ok(report.includes("https://doi.org/10.1234/methods.2026.11"));
+  assert.ok(report.includes("Source scope: abstract"));
+  assert.ok(report.includes("Preliminary: abstract only"));
+  assert.ok(report.includes("NOT a validated risk-of-bias"));
+  assert.ok(report.includes("Sample size: 310"));
+  assert.ok(report.includes("Estimate uncertainty: Not reported"));
 });
