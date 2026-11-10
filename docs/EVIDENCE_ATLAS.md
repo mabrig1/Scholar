@@ -83,3 +83,26 @@ The sentence-extraction heuristic can select background claims, hypotheses or se
 3. Authentication and cloud projects through separately deployable service.
 4. Zotero read import first; user-approved notes/tags exports later.
 5. StatLab results linking, objective alignment, collaboration and reproducible literature review export.
+
+## Phase 4: methodological appraisal and context-aware comparison (development branch)
+
+The app now supports manually recorded methodological context for each researcher-classified paper ↔ claim relationship.
+
+- Record reported study design, population, sample size (optional), sampling approach, study setting and outcome measurement.
+- Capture an effect estimate and associated uncertainty as **source-transcribed text**; empty and unreported values remain explicit and are not filled in by AI.
+- Log review location, contextual limitations and four **reviewer-noted potential bias concerns** (selection, confounding, measurement, missing data).
+- Appraisal requires a researcher to affirm they inspected the cited material; it **does not** certify that the review was correct.
+- Source passages classified from abstracts remain **preliminary** even after appraisal. No automatic methodological grade, ROB 2, ROBINS-I or GRADE classification is assigned.
+- For pairs of supporting vs contradicting assessments, surface possible study-design, outcome or setting mismatches, or missing review context. The checklist never claims quantitative heterogeneity, causal certainty or proof of a disagreement.
+- Existing v1 JSON project backups remain importable; new optional appraisal values are validated at the import boundary.
+- Changing the stance, basis, passage or locator of an assessment invalidates the older appraisal, preventing misleading reuse of stale methodological context.
+- All appraisals remain local in the browser, included in the project JSON backup, and separate from Scholar authentication and billing.
+- Tests: `tests/evidence-atlas-method-appraisal.test.ts`.
+
+### Boundaries
+
+This is a **structured evidence-notes tool**, not a risk-of-bias instrument. Sample size is never used as an automatic evidence quality score. An appraisal can remain incomplete. Abstract-only data and missing outcomes are warnings, not guessed facts. Different designs, settings or outcomes are prompts to check comparability, not evidence that studies must disagree.
+
+### Release checks
+
+Run the standard Scholarly Quality Gate and feature validation after Phase 3 is reviewed, merge independently with explicit user approval, and manually verify methods editing, export/import, changing an assessment after appraising it and mobile keyboard behavior.
