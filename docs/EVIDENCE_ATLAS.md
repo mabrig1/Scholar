@@ -106,3 +106,44 @@ This is a **structured evidence-notes tool**, not a risk-of-bias instrument. Sam
 ### Release checks
 
 Run the standard Scholarly Quality Gate and feature validation after Phase 3 is reviewed, merge independently with explicit user approval, and manually verify methods editing, export/import, changing an assessment after appraising it and mobile keyboard behavior.
+
+
+## Phase 5: objective alignment and public Zotero bibliography bridge (review branch)
+
+### Objective alignment
+
+- The portable domain model adds researcher-authored objectives to the version-1 JSON contract, with backward-compatible importing of older backups that have no objectives.
+- Each objective records exactly one **focus variable** (and optional measured outcome), a corresponding research question, optional hypothesis and explicit links to existing claim IDs.
+- Review coverage is derived only from linked source assessments and reports distinct assessed papers, evidence stances and abstract-only limitations. **These are not statistical tests of hypotheses or a substitute for research design.**
+- Objectives can be added, revised and removed with entries in the local audit log; deleting an objective never deletes source papers or evidence assessments.
+- Generate an objective alignment Markdown appendix with saved DOI citations and transparent missing-evidence follow-up prompts.
+- Validation rejects orphaned objective→claim links, duplicate objectives, malformed fields, large arrays and conflicting variable identity on new edits.
+
+### Zotero first integration: public read-only preview
+
+- User provides numeric Zotero user/group library ID and optional 8-character collection key.
+- New bounded `GET /api/evidence-atlas/zotero` route fetches public top-level items from `https://api.zotero.org` only, API v3, max 20 records, strict IDs and collection key validation, no redirects.
+- No API key handling, no private-library access, no PDF/attachment download, no Zotero writes or background sync.
+- DOI-bearing item metadata is **previewed**, not marked verified.
+- User selects individual records, triggering an exact DOI verification against `https://api.crossref.org/works/{doi}` at `GET /api/evidence-atlas/zotero/verify`.
+- Only the **Crossref response** is passed to the existing `addAtlasPaper` contract. A Zotero DOI or title alone never masquerades as verified Crossref registration.
+- Per-instance best-effort rate limiting is included, but a **distributed platform rate limiter** should gate public high-traffic production usage.
+- Zotero group or user libraries must be **publicly readable**; private Zotero integration will require authenticated user accounts, consent, OAuth, secure token storage, conflict/version handling and careful tenancy separation.
+- Zotero source links are surfaced only when Zotero itself returns `https://www.zotero.org` links. No URLs are fabricated.
+- The app does not validate full-text findings, publisher corrections, retractions or journal quality from Zotero metadata.
+
+Reference: official Zotero Web API v3: https://www.zotero.org/support/dev/web_api/v3/basics
+
+### Verification
+
+```bash
+npm ci
+npm audit --audit-level=high
+npm run typecheck
+npm test
+npm run build
+```
+
+Manual smoke test: import an old v1 project with no objective fields; add an objective, link/unlink claims, check audit and export, then reload; preview a real public Zotero group/user library, verify and save an exact DOI, verify duplicate DOI handling, test rate limits and invalid library IDs. Confirm no credentials are accepted or stored and no production settings changed.
+
+The Phase 5 PR should remain draft until PR #27 and #28 are reviewed/released in order. **No deployment or production switch is included.**
