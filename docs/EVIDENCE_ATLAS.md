@@ -10,6 +10,8 @@
 - Human-reviewed, passage-linked, abstract/full-text scoped classifications (300 assessments per project).
 - Interactive bipartite map: paper nodes and claim nodes joined by classified evidence records.
 - Claim dossier and counts without fabricated consensus percentages.
+- **Phase 2: project-scoped research-gap audit** of review coverage, unreviewed claims, potential human-classified disagreements, abstract-only evidence, missing passage locators, methodological notes and retraction metadata flags.
+- Exportable Markdown audit with DOI source links, evidence record IDs, reproducibility caveats and concrete follow-up questions.
 - Append-only-with-bounded-retention research history for searches and map edits.
 - Native Node test coverage for round trips, deduplication, evidence replacement, provenance and invalid imports.
 - Home-page entry point.
@@ -37,9 +39,17 @@ Crossref DOI registration verifies bibliographic metadata, not quality, results 
 
 A claim represents a researcher's proposition. A colored line represents a human-entered classification connected to a source excerpt and explicit review scope. A citation count is **not** a quality score. Retraction flags are displayed; retraction status should be rechecked in the original records.
 
-Counts of source classifications are not a validated consensus score, meta-analysis or statement of causal certainty. Abstract-only assessments are visibly labeled and counted separately. Research-gap inference, automatic claim extraction, AI summarization and bidirectional Zotero syncing are not implemented in this release.
+Counts of source classifications are not a validated consensus score, meta-analysis or statement of causal certainty. Abstract-only assessments are visibly labeled and counted separately. The deterministic gap audit identifies **review-workflow blind spots within a local corpus**, never field-wide research gaps; it does not search all relevant papers, score study quality, verify contradictions or infer novelty. Automatic claim extraction, AI explanations, full-text adjudication and bidirectional Zotero syncing are not implemented.
 
 No unauthenticated write endpoints, cloud project storage, automatic PDFs, user account migration, live deployment or production changes are included.
+
+## Phase 2 gap-intelligence protocol
+
+The gap engine lives in `packages/evidence-atlas-core/src/gap-intelligence.ts`, outside Scholar-specific authentication, databases and payment code. It is run on the client without sending private project content to model providers. Every suggestion is derived from existing paper IDs and source-assessment IDs and can be exported as a Markdown research audit.
+
+Potential disagreement requires both a positive and a negative human classification among sources without a retraction flag; such differences may reflect non-comparable outcomes or populations. A small source count is a workflow reminder, not a valid statistical decision rule. Abstract-only evidence and missing methodology/locators are flagged explicitly. A research question or recommended investigation is **not a claim that the published literature has a verified gap**.
+
+This version deliberately does **not** auto-send the project to external LLMs. A later optional AI layer must provide explicit consent, per-user authorization, strict source allowlists, limits and server-side protections before release.
 
 ## Test and launch gates
 
@@ -55,8 +65,8 @@ No unauthenticated write endpoints, cloud project storage, automatic PDFs, user 
 
 ## Scope of future milestones
 
-1. Search and screening coverage log; PDF/page anchoring and evidence extraction proposals.
-2. Context-aware contradiction review, structured research-gap detection and method-aware evidence quality review.
+1. Structured search coverage logs (database/date/filter screening), PDF/page anchoring and source-grounded extraction proposals.
+2. Human-confirmed research-gap registry, context-aware contradiction review and method-aware evidence quality review beyond the current deterministic audit.
 3. Authentication and cloud projects through separately deployable service.
 4. Zotero read import first; user-approved notes/tags exports later.
 5. StatLab results linking, objective alignment, collaboration and reproducible literature review export.
