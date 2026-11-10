@@ -1,0 +1,46 @@
+.module{max-width:1328px;margin:0 auto 24px;padding:25px;border-radius:20px;border:1px solid #32617a;background:linear-gradient(125deg,#132a45,#0d2238);color:#eaf3ff;font-family:Inter,ui-sans-serif,system-ui,sans-serif}
+.module *{box-sizing:border-box}
+.header{display:flex;align-items:start;justify-content:space-between;gap:20px}
+.header h2{margin:11px 0;font-size:clamp(1.3rem,2.5vw,1.8rem);letter-spacing:-.025em}
+.header p{font-size:14px;color:#b4c9db;line-height:1.7;max-width:800px}
+.eyebrow{letter-spacing:.12em;font-size:11px;font-weight:800;color:#71e0c4}
+.actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:10px}
+.actions button,.zoteroForm button{cursor:pointer;padding:11px 14px;border:1px solid #4b9c92;background:#224b4a;color:#dffcf3;border-radius:10px;font:inherit;font-size:13px;font-weight:750}
+.actions button:hover,.zoteroForm button:hover{background:#2e6764}
+.actions button:disabled,.zoteroForm button:disabled{cursor:not-allowed;opacity:.5}
+.actions a{padding:10px 0;font-size:13px}
+.form,.zoteroForm{display:flex;flex-direction:column;gap:13px;border:1px solid #416078;background:#102237;border-radius:15px;padding:20px;margin:20px 0}
+.form h3{margin:0 0 5px;font-size:17px}
+.form label,.zoteroForm label{display:flex;flex-direction:column;gap:6px;font-size:13px;color:#e0ebf8;font-weight:750}
+.form textarea,.form input,.form select,.zoteroForm input,.zoteroForm select{border-radius:8px;padding:10px 12px;width:100%;border:1px solid #48657f;background:#0a1728;color:#f5fcff;font:inherit;font-size:14px}
+.form textarea{resize:vertical;line-height:1.55}
+.form input:focus-visible,.form textarea:focus-visible,.form button:focus-visible,.zoteroForm input:focus-visible,.zoteroForm button:focus-visible{outline:2px solid #57e8c7;outline-offset:2px}
+.two{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.claimPicker{border-radius:10px;border:1px solid #39536f;padding:12px}
+.claimPicker legend{font-size:13px;font-weight:700;padding:0 6px}
+.claimPicker .check{display:flex;flex-direction:row;align-items:flex-start;gap:9px;margin:7px 0;font-size:12px;font-weight:500;color:#c9ddea;line-height:1.5}
+.check input{width:16px!important;height:16px;margin:1px 0 0;flex:0 0 16px}
+.claimPicker p{font-size:12px;color:#9db4c8}
+.records{display:flex;flex-direction:column;gap:12px;margin-top:18px}
+.record{padding:18px;border:1px solid #335673;background:#0c1d30;border-radius:13px}
+.record header{display:flex;justify-content:space-between;align-items:start;gap:10px;flex-wrap:wrap}
+.record header strong{line-height:1.5;font-size:15px}
+.record header span{text-transform:capitalize;font-size:11px;color:#a9f2d8;border:1px solid #407b7a;border-radius:30px;padding:5px 8px}
+.record p{font-size:13px;color:#bed0df;line-height:1.55;margin:10px 0}
+.record b{color:#e9f5ff}
+.metrics{display:flex;flex-wrap:wrap;gap:7px;margin:12px 0}
+.metrics span{font-size:11px;background:#284052;color:#d6f2f4;padding:7px;border-radius:7px}
+.record .prompt{border-left:3px solid #c9a16c;padding-left:11px;color:#f8dab4}
+.empty{color:#9db6ca;padding:16px;border:1px dashed #48657d;border-radius:10px}
+.caution{font-size:12px;color:#ebd6ae;line-height:1.65;padding:10px 13px;border:1px solid #796844;background:#3634216b;border-radius:10px;margin-top:16px}
+.zoteroForm{display:grid;grid-template-columns:180px 1fr 1fr auto;align-items:end}
+.zoteroForm>button{min-height:39px}
+.error{color:#ffb5bd;background:#48242d;padding:11px;border-radius:8px;font-size:13px}
+.success{color:#a0f7d6;background:#18433e;padding:11px;border-radius:8px;font-size:13px}
+.zoteroList{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:15px 0}
+.zoteroItem{padding:16px;border-radius:12px;border:1px solid #3c5978;background:#0c1b30;overflow-wrap:anywhere}
+.zoteroItem strong{font-size:14px;line-height:1.5}
+.zoteroItem p{font-size:12px;color:#a9bdcf;line-height:1.55}
+.zoteroItem small{font-size:12px;color:#84e9c9}
+@media(max-width:900px){.header{flex-direction:column}.zoteroForm{grid-template-columns:repeat(2,minmax(0,1fr))}.module{margin:0 15px 20px}}
+@media(max-width:640px){.module{padding:18px}.two,.zoteroList,.zoteroForm{grid-template-columns:1fr}.form,.zoteroForm{padding:15px}}
