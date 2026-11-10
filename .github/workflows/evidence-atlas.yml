@@ -7,6 +7,7 @@ on:
       - 'lib/evidence-atlas.ts'
       - 'packages/evidence-atlas-core/**'
       - 'tests/evidence-atlas.test.ts'
+      - 'tests/evidence-atlas-gap-intelligence.test.ts'
       - '.github/workflows/evidence-atlas.yml'
   workflow_dispatch:
 
