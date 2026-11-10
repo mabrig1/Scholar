@@ -65,9 +65,18 @@ export function parseZoteroPublicItems(raw: unknown): { items: ZoteroPublicItem[
         return cleanText(record.name || [record.firstName, record.lastName].filter(Boolean).join(" "), 120);
       }).filter(Boolean)
       : [];
+    const links = wrapper.links && typeof wrapper.links === "object" && !Array.isArray(wrapper.links) ? wrapper.links as Record<string, unknown> : {};
+    const alt = links.alternate && typeof links.alternate === "object" && !Array.isArray(links.alternate) ? links.alternate as Record<string, unknown> : {};
+    const candidate = cleanText(alt.href, 500);
+    let zoteroUrl = "";
+    try {
+      const source = new URL(candidate);
+      if (source.protocol === "https:" && source.hostname === "www.zotero.org") zoteroUrl = source.toString();
+    } catch {
+      // Missing or malformed source link: never invent a Zotero item URL.
+    }
     items.push({
-      key, doi, title, creators, date: cleanText(data.date, 60), itemType: type,
-      zoteroUrl: "https://www.zotero.org/" + encodeURIComponent(key),
+      key, doi, title, creators, date: cleanText(data.date, 60), itemType: type, zoteroUrl,
     });
   }
   return { items, skipped };
