@@ -1,0 +1,23 @@
+.form{margin:22px 0;padding:20px;background:#0b1b2e;border:1px solid #35516e;border-radius:16px;display:flex;flex-direction:column;gap:15px}
+.form label{display:flex;flex-direction:column;gap:8px;color:#d1e4f3;font-size:13px;font-weight:700;min-width:0}
+.form input,.form select,.form textarea{font:inherit;font-size:14px;color:#eefaff;background:#11263d;border:1px solid #425e78;padding:11px 12px;border-radius:8px;width:100%;min-width:0}
+.form select{white-space:normal}
+.form textarea{resize:vertical;line-height:1.5}
+.form input:focus-visible,.form textarea:focus-visible,.form select:focus-visible,.form button:focus-visible{outline:2px solid #51edc2;outline-offset:2px}
+.heading{display:flex;justify-content:space-between;align-items:center;gap:16px}
+.heading div{display:flex;flex-direction:column;gap:5px}
+.heading strong{font-size:16px}
+.heading span{font-size:12px;color:#aec4d9}
+.row{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.caution{line-height:1.65;padding:12px;background:#3e352466;border:1px solid #947143;border-radius:9px;color:#ffe0ad;font-size:12px}
+.biasSet{border:1px solid #3c5772;border-radius:12px;padding:14px;margin:0;min-width:0}
+.biasSet legend{font-size:13px;font-weight:800;padding:0 7px}
+.biasSet p{font-size:12px;line-height:1.5;color:#a6c2d8;margin-top:0}
+.confirm{display:flex!important;flex-direction:row!important;align-items:flex-start;gap:10px!important;line-height:1.6!important}
+.confirm input{width:16px!important;height:16px!important;margin-top:3px;flex-shrink:0}
+.error{color:#ffabb7;background:#492636;padding:10px;border-radius:8px}
+.actions{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.submit,.cancel{padding:10px 14px;border-radius:9px;border:1px solid #4b6a83;cursor:pointer;font-weight:800}
+.submit{background:#5ce3be;color:#092819;border-color:#5ce3be}
+.cancel{background:#1f3951;color:#d5e9f4}
+@media(max-width:680px){.row{grid-template-columns:1fr}.form{padding:14px}.heading{align-items:flex-start;flex-direction:column}}
