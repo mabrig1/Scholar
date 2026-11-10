@@ -17,6 +17,7 @@ import {
   type SearchArticle,
 } from "@/lib/evidence-atlas";
 import { analyzeAtlasGaps, renderAtlasGapReport } from "@/packages/evidence-atlas-core/src/gap-intelligence";
+import { approveGroundedProposal, proposeAbstractClaims, type ClaimProposal } from "@/packages/evidence-atlas-core/src/claim-proposals";
 import styles from "./evidence-atlas.module.css";
 
 type SearchResponse = { articles?: SearchArticle[]; count?: number; error?: string; verifiedAt?: string };
@@ -247,6 +248,26 @@ export default function EvidenceAtlasClient() {
       setError(problem instanceof Error ? problem.message : "Unable to add claim.");
     }
   }
+  function approveProposal(proposal: ClaimProposal) {
+    if (!project) return;
+    try {
+      const updated = approveGroundedProposal(project, proposal);
+      const matching = updated.claims.find((claim) => claim.text.toLowerCase() === proposal.claimText.toLowerCase());
+      setProject(updated);
+      setSelectedClaimId(matching?.id || "");
+      setPaperId(proposal.paperId);
+      setBasis("abstract");
+      setStance("unclear");
+      setExcerpt(proposal.excerpt);
+      setLocator("Abstract");
+      setNotes("Extracted abstract sentence; source finding and methodological relevance not yet independently reviewed.");
+      setError("");
+      setNotice("Abstract excerpt approved as a research proposition only. Review the original source and classify evidence separately.");
+      document.getElementById("atlas-claim-review")?.scrollIntoView({ behavior: "smooth" });
+    } catch (problem) {
+      setError(problem instanceof Error ? problem.message : "Unable to approve this source-anchored proposition.");
+    }
+  }
   function addEvidence(event: FormEvent) {
     event.preventDefault();
     commit((value) => recordAtlasEvidence(value, {
@@ -292,6 +313,7 @@ export default function EvidenceAtlasClient() {
     [project, selectedClaimId],
   );
   const gapAudit = useMemo(() => project ? analyzeAtlasGaps(project) : null, [project]);
+  const proposals = useMemo(() => selectedPaper ? proposeAbstractClaims(selectedPaper, 8) : [], [selectedPaper]);
   if (!hydrated) return <main className={styles.shell}><p className={styles.loading}>Opening Evidence Atlas…</p></main>;
 
   return (
@@ -402,11 +424,51 @@ export default function EvidenceAtlasClient() {
                     className={selectedClaimId === claim.id ? styles.activeClaim : styles.claim}>
                     <strong>{claim.text}</strong>
                     <small>{counts.total} assessments · {counts.supports} support · {counts.contradicts} contradict</small>
+                    {claim.origin && <small>Abstract-grounded proposition · DOI {claim.origin.doi} · Not yet verified evidence</small>}
                   </button>;
                 })}
                 {!project.claims.length && <p className={styles.muted}>No claims yet. Add a proposition to start the evidence graph.</p>}
               </div>
             </article>
+          </section>
+          <section className={styles.panel}>
+            <span className={styles.eyebrow}>02B · SOURCE-GROUNDED CANDIDATES</span>
+            <h2>Propose claims from a saved paper</h2>
+            <p className={styles.muted}>
+              Preview extractive candidate sentences from an existing source abstract. No AI call or external
+              sharing occurs. These are direct quotations, not verified study findings. Approving one creates
+              a proposition and prepares the review form without automatically classifying evidence.
+            </p>
+            {project.papers.length ? <>
+              <div className={styles.proposalPicker}>
+                <label htmlFor="atlas-proposal-paper">Source paper to inspect</label>
+                <select id="atlas-proposal-paper" value={paperId} onChange={(e) => setPaperId(e.target.value)}>
+                  <option value="">Choose a saved paper</option>
+                  {project.papers.map((paper) => <option key={paper.id} value={paper.id}>{paper.title.slice(0, 100)}</option>)}
+                </select>
+                {selectedPaper && <a href={doiUrl(selectedPaper.doi)} target="_blank" rel="noopener noreferrer">Verify DOI record ↗</a>}
+              </div>
+              {selectedPaper && !selectedPaper.abstract &&
+                <p className={styles.empty}>This registry record has no abstract to extract from. Read the original paper and enter a researcher-authored claim instead.</p>}
+              {selectedPaper && proposals.length === 0 && selectedPaper.abstract &&
+                <p className={styles.empty}>No suitable sentence candidates found. You can still formulate a claim manually after reading the source.</p>}
+              <div className={styles.proposalGrid}>
+                {proposals.map((proposal) => {
+                  const already = project.claims.some((claim) => claim.text.toLowerCase() === proposal.claimText.toLowerCase());
+                  return <article key={proposal.id} className={styles.proposalCard}>
+                    <div className={styles.proposalCardHead}>
+                      <strong>{proposal.signal === "possible-result-statement" ? "Possible reported-result sentence" : "Context or hypothesis sentence"}</strong>
+                      <span>Abstract characters {proposal.start}–{proposal.end}</span>
+                    </div>
+                    <blockquote>“{proposal.excerpt}”</blockquote>
+                    <p>{proposal.caution}</p>
+                    <button type="button" className={styles.secondary} disabled={already}
+                      onClick={() => approveProposal(proposal)}>{already ? "Already added to map" : "Approve as research proposition"}</button>
+                  </article>;
+                })}
+              </div>
+            </> : <p className={styles.empty}>Save a DOI-backed paper from literature search before proposing source-anchored claims.</p>}
+            <p className={styles.caution}>An extracted sentence may describe background literature, a hypothesis or preliminary interpretation. Its wording is never proof of support, and no consensus score is generated.</p>
           </section>
           <section className={styles.panel}>
             <div className={styles.panelHeader}>
