@@ -105,7 +105,7 @@ export function approveGroundedProposal(project: AtlasProject, proposal: ClaimPr
       paperId: paper.id,
       doi: paper.doi,
       excerpt: proposal.excerpt,
-      locator: "Abstract",
+      locator: "Abstract" as const,
       start: proposal.start,
       end: proposal.end,
       reviewStatus: "proposal-approved" as const,
