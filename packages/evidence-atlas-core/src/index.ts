@@ -216,6 +216,7 @@ export function parseAtlasProject(raw: unknown): AtlasProject {
   const papersById = new Map(base.papers.map((p) => [p.id, p]));
   if (!base.claims.every((c) => {
     if (c.origin === undefined) return true;
+    if (!isRecord(c.origin)) return false;
     const o = c.origin;
     const paper = papersById.get(o.paperId);
     return Boolean(paper) && o.doi === paper?.doi &&
