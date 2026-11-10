@@ -8,6 +8,7 @@ on:
       - 'packages/evidence-atlas-core/**'
       - 'tests/evidence-atlas.test.ts'
       - 'tests/evidence-atlas-gap-intelligence.test.ts'
+      - 'tests/evidence-atlas-claim-proposals.test.ts'
       - '.github/workflows/evidence-atlas.yml'
   workflow_dispatch:
 
