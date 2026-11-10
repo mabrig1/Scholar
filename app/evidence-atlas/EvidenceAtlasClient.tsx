@@ -18,6 +18,11 @@ import {
 } from "@/lib/evidence-atlas";
 import { analyzeAtlasGaps, renderAtlasGapReport } from "@/packages/evidence-atlas-core/src/gap-intelligence";
 import { approveGroundedProposal, proposeAbstractClaims, type ClaimProposal } from "@/packages/evidence-atlas-core/src/claim-proposals";
+import {
+  assessAppraisalReadiness, compareOpposingAtlasEvidence, recordMethodAppraisal,
+  type AtlasMethodAppraisalInput,
+} from "@/packages/evidence-atlas-core/src/method-appraisal";
+import EvidenceMethodAppraisalEditor from "./EvidenceMethodAppraisalEditor";
 import styles from "./evidence-atlas.module.css";
 
 type SearchResponse = { articles?: SearchArticle[]; count?: number; error?: string; verifiedAt?: string };
@@ -151,6 +156,7 @@ export default function EvidenceAtlasClient() {
   const [excerpt, setExcerpt] = useState("");
   const [locator, setLocator] = useState("");
   const [notes, setNotes] = useState("");
+  const [editingEvidenceId, setEditingEvidenceId] = useState("");
   const [notice, setNotice] = useState("");
   const [error, setError] = useState("");
 
@@ -279,6 +285,18 @@ export default function EvidenceAtlasClient() {
       setLocator("");
     }
   }
+  function saveMethodAppraisal(evidenceId: string, input: AtlasMethodAppraisalInput) {
+    if (!project) return;
+    try {
+      const updated = recordMethodAppraisal(project, evidenceId, input);
+      setProject(updated);
+      setEditingEvidenceId("");
+      setError("");
+      setNotice("Study context saved. No automatic study-quality rating or consensus claim was made.");
+    } catch (problem) {
+      setError(problem instanceof Error ? problem.message : "Unable to save the methodological appraisal.");
+    }
+  }
   function choosePaper(id: string) {
     setPaperId(id);
     setNotice("Selected source paper for your next evidence assessment.");
@@ -313,6 +331,10 @@ export default function EvidenceAtlasClient() {
     [project, selectedClaimId],
   );
   const gapAudit = useMemo(() => project ? analyzeAtlasGaps(project) : null, [project]);
+  const comparabilityFlags = useMemo(() =>
+    project ? compareOpposingAtlasEvidence(project, selectedClaimId) : [],
+    [project, selectedClaimId]);
+  const editingEntry = assessments.find((entry) => entry.id === editingEvidenceId);
   const proposals = useMemo(() => selectedPaper ? proposeAbstractClaims(selectedPaper, 8) : [], [selectedPaper]);
   if (!hydrated) return <main className={styles.shell}><p className={styles.loading}>Opening Evidence Atlas…</p></main>;
 
@@ -529,8 +551,48 @@ export default function EvidenceAtlasClient() {
                     <small>{entry.locator || "Locator not recorded"} · Reviewed {safeDate(entry.reviewedAt)}</small>
                     {entry.notes && <p className={styles.muted}>Reviewer notes: {entry.notes}</p>}
                     {paper && <a href={doiUrl(paper.doi)} target="_blank" rel="noopener noreferrer">Check source ↗</a>}
+                    <div className={styles.methodsSummary}>
+                      <strong>{assessAppraisalReadiness(entry).label}</strong>
+                      {entry.appraisal ? <>
+                        <p>Study design: {entry.appraisal.studyDesign} · Population: {entry.appraisal.population || "Not entered"}</p>
+                        <p>Setting: {entry.appraisal.setting || "Not entered"} · Sample size: {entry.appraisal.sampleSize ?? "Not entered"}</p>
+                        <p>Outcome measure: {entry.appraisal.outcomeMeasure || "Not entered"}</p>
+                        {(entry.appraisal.effectEstimate || entry.appraisal.uncertainty) &&
+                          <p>Estimate: {entry.appraisal.effectEstimate || "Not entered"} · Uncertainty: {entry.appraisal.uncertainty || "Not entered"}</p>}
+                        <p>Methods checked at: {entry.appraisal.methodsLocator}</p>
+                        {entry.appraisal.limitations && <p>Reviewer limitations: {entry.appraisal.limitations}</p>}
+                        <p>Concern notes — selection: {entry.appraisal.selectionBias}; confounding: {entry.appraisal.confounding}; measurement: {entry.appraisal.measurementBias}; missing data: {entry.appraisal.missingData}.</p>
+                      </> : <p>Add source-checked study context before treating opposing findings as comparable.</p>}
+                      {assessAppraisalReadiness(entry).caveats.map((caveat) =>
+                        <p className={styles.methodsCaveat} key={caveat}>{caveat}</p>)}
+                      <button type="button" className={styles.inlineButton}
+                        aria-expanded={editingEvidenceId === entry.id}
+                        onClick={() => setEditingEvidenceId(editingEvidenceId === entry.id ? "" : entry.id)}>
+                        {entry.appraisal ? "Revise methods appraisal" : "Appraise study methods"}
+                      </button>
+                    </div>
                   </div>;
                 })}
+                {editingEntry && <EvidenceMethodAppraisalEditor
+                  key={editingEntry.id}
+                  record={editingEntry}
+                  onSave={(input) => saveMethodAppraisal(editingEntry.id, input)}
+                  onCancel={() => setEditingEvidenceId("")}
+                />}
+                {comparabilityFlags.length > 0 && <div className={styles.comparability}>
+                  <h3>Potential non-comparability — investigate before interpreting conflict</h3>
+                  <p>These prompts compare reviewer-entered context for opposing classifications.
+                    They do not establish statistical heterogeneity or settle contradictory findings.</p>
+                  {comparabilityFlags.map((flag) => {
+                    const first = project.papers.find((paper) => paper.id === flag.paperIds[0]);
+                    const second = project.papers.find((paper) => paper.id === flag.paperIds[1]);
+                    return <div key={flag.id} className={styles.comparabilityItem}>
+                      <strong>{first?.title || "Source 1"} vs. {second?.title || "Source 2"}</strong>
+                      <p>{flag.explanation}</p>
+                      <small>Context flags: {flag.kinds.join(", ")}</small>
+                    </div>;
+                  })}
+                </div>}
                 {!assessments.length && <p className={styles.empty}>No reviewed evidence for this claim. Do not infer support or contradictions from titles alone.</p>}
               </> : <p className={styles.empty}>Select a claim to see its supporting, conflicting and unresolved evidence.</p>}
             </article>
