@@ -51,6 +51,19 @@ Potential disagreement requires both a positive and a negative human classificat
 
 This version deliberately does **not** auto-send the project to external LLMs. A later optional AI layer must provide explicit consent, per-user authorization, strict source allowlists, limits and server-side protections before release.
 
+
+## Phase 3: source-anchored claim proposals (extractive MVP)
+
+The interface can now select a saved DOI-backed paper and offer candidate sentences from its **existing abstract only**. This version uses **deterministic sentence extraction and outcome-keyword hints, not generative AI**. No user papers, abstracts or private drafts are submitted to third-party language-model APIs.
+
+- Candidates preserve exact \`start\`/\`end\` character spans, DOI, paper ID and verbatim excerpt; approval fails if the source quote has been altered or the source no longer exists.
+- A researcher must actively approve a proposed sentence as a *proposition*, not as verified study evidence. Approval never creates support/contradiction classifications.
+- Claim provenance is stored as an optional backward-compatible \`AtlasClaim.origin\` field; existing v1 projects with unlinked researcher-authored claims remain supported.
+- The review form can then be populated with the source excerpt and an initial **unclear** classification, but **nothing is saved as evidence** until the researcher separately reviews and submits it.
+- Import validation checks exact source anchors and rejects tampered or orphaned origin metadata.
+
+The sentence-extraction heuristic can select background claims, hypotheses or secondary citations. It therefore cannot verify that a sentence reports the paper's own results, and is not a scientific fact checker. Future AI extraction must be **opt-in**, use authenticated per-user quotas and server-side validation, return text anchored to lawful source passages and support human review.
+
 ## Test and launch gates
 
 - npm ci
