@@ -14,7 +14,7 @@
     "docx": "9.7.1",
     "mammoth": "1.12.0",
     "mongoose": "8.24.4",
-    "next": "15.5.26",
+    "next": "15.5.29",
     "pdf-parse": "2.4.5",
     "react": "19.1.1",
     "react-dom": "19.1.1"
@@ -28,6 +28,7 @@
   },
   "overrides": {
     "postcss": "8.5.23",
-    "sharp": "0.35.4"
+    "sharp": "0.35.5",
+    "source-map-js": "1.2.2"
   }
 }
