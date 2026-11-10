@@ -3,6 +3,9 @@
  * Pure, browser/server compatible and independent of Scholar auth, payments and DB.
  * Facts about paper metadata do not constitute verified findings.
  */
+import { isValidMethodAppraisal } from "./method-appraisal";
+import type { AtlasMethodAppraisal } from "./method-appraisal";
+
 export const ATLAS_STORAGE_KEY = "mabrig_evidence_atlas_v1";
 export const ATLAS_SCHEMA_VERSION = 1;
 
@@ -45,6 +48,8 @@ export type AtlasEvidence = {
   locator: string;
   notes: string;
   reviewedAt: string;
+  /** Optional, reviewer-transcribed context. Never an automatic quality score. */
+  appraisal?: AtlasMethodAppraisal;
 };
 export type AtlasEvent = { id: string; at: string; action: string; summary: string };
 export type AtlasProject = {
@@ -168,6 +173,13 @@ export function recordAtlasEvidence(project: AtlasProject, input: {
     locator: limited(input.locator, 120),
     notes: limited(input.notes, 1200),
     reviewedAt: now(),
+    // Reclassification against a changed passage invalidates previous methods context.
+    // Otherwise keep an independent methodological appraisal linked to this exact review.
+    ...(previous?.appraisal &&
+      previous.basis === input.basis && previous.stance === input.stance &&
+      previous.excerpt === excerpt && previous.locator === limited(input.locator, 120)
+        ? { appraisal: previous.appraisal }
+        : {}),
   };
   const evidence = previous
     ? project.evidence.map((item) => item.id === previous.id ? assessment : item)
@@ -237,7 +249,8 @@ export function parseAtlasProject(raw: unknown): AtlasProject {
       ["abstract", "full-text"].includes(e.basis) && typeof e.excerpt === "string" &&
       e.excerpt.trim().length >= 12 && e.excerpt.length <= 1500 &&
       typeof e.notes === "string" && e.notes.length <= 1200 &&
-      typeof e.locator === "string")) {
+      typeof e.locator === "string" &&
+      (e.appraisal === undefined || isValidMethodAppraisal(e.appraisal)))) {
     throw new Error("The project contains unsupported or orphaned evidence records.");
   }
   if (new Set(base.evidence.map((e) => e.claimId + ":" + e.paperId)).size !== base.evidence.length) {
