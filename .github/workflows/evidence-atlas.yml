@@ -1,0 +1,33 @@
+name: Evidence Atlas feature verification
+
+on:
+  pull_request:
+    paths:
+      - 'app/evidence-atlas/**'
+      - 'lib/evidence-atlas.ts'
+      - 'packages/evidence-atlas-core/**'
+      - 'tests/evidence-atlas.test.ts'
+      - '.github/workflows/evidence-atlas.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 20
+          cache: npm
+      - name: Install locked dependencies
+        run: npm ci
+      - name: Typecheck
+        run: npm run typecheck
+      - name: Unit tests
+        run: npm test
+      - name: Build production bundle
+        run: npm run build

@@ -1,0 +1,10 @@
+{
+  "name": "@mabrig/evidence-atlas-core",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Portable versioned Evidence Atlas claim and provenance domain; no Scholar runtime dependencies",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  }
+}
