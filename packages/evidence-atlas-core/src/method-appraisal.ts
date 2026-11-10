@@ -209,3 +209,78 @@ export function compareOpposingAtlasEvidence(project: AtlasProject, claimId: str
   }
   return flags;
 }
+
+
+/**
+ * Plain Markdown review appendix. It is not a systematic-review quality table,
+ * risk-of-bias assessment, evidence certainty grade, or independent verification.
+ */
+export function renderMethodAppraisalReport(project: AtlasProject, generatedAt = new Date().toISOString()): string {
+  const plain = (input: unknown) => String(input ?? "Not entered").replace(/\s+/g, " ").trim().slice(0, 1500) || "Not entered";
+  const lines = [
+    "# MABRIG Evidence Atlas — Methodological Context Review",
+    "",
+    "Project: " + plain(project.title),
+    "Research question: " + plain(project.question),
+    "Generated: " + plain(generatedAt),
+    "",
+    "> These appraisals are user-entered study notes. This is NOT a validated risk-of-bias instrument, evidence-certainty grade, quality score, causal finding or statistical meta-analysis. Abstract-only notes are provisional.",
+    "",
+    "Reviewed source-to-claim links: " + project.evidence.length,
+    "Links with a methods appraisal: " + project.evidence.filter((item) => item.appraisal).length,
+    "",
+  ];
+  for (const [index, claim] of project.claims.entries()) {
+    lines.push("## Claim " + (index + 1) + " — " + plain(claim.text), "");
+    const entries = project.evidence.filter((item) => item.claimId === claim.id);
+    if (!entries.length) lines.push("No source-linked assessments recorded.", "");
+    for (const entry of entries) {
+      const paper = project.papers.find((item) => item.id === entry.paperId);
+      const a = entry.appraisal;
+      lines.push("### " + plain(paper?.title || "Source unavailable"), "",
+        "- DOI: " + (paper ? "https://doi.org/" + encodeURIComponent(paper.doi).replace("%2F", "/") : "Unavailable"),
+        "- Source scope: " + entry.basis,
+        "- Reviewer classification: " + entry.stance,
+        "- Evidence excerpt: " + plain(entry.excerpt),
+        "- Source passage locator: " + plain(entry.locator),
+        "- Appraisal status: " + assessAppraisalReadiness(entry).label);
+      if (a) {
+        lines.push(
+          "- Study design: " + a.studyDesign,
+          "- Setting: " + plain(a.setting),
+          "- Population: " + plain(a.population),
+          "- Sample size: " + (a.sampleSize ?? "Not reported"),
+          "- Sampling method: " + a.samplingMethod,
+          "- Outcome measure: " + plain(a.outcomeMeasure),
+          "- Effect estimate: " + plain(a.effectEstimate),
+          "- Estimate uncertainty: " + plain(a.uncertainty),
+          "- Methods locator: " + plain(a.methodsLocator),
+          "- Bias concern notes: selection=" + a.selectionBias + "; confounding=" + a.confounding +
+            "; measurement=" + a.measurementBias + "; missing data=" + a.missingData,
+          "- Limitations: " + plain(a.limitations),
+          "- Appraised at: " + plain(a.appraisedAt),
+        );
+      }
+      for (const caveat of assessAppraisalReadiness(entry).caveats) lines.push("- Caution: " + plain(caveat));
+      lines.push("");
+    }
+    const flags = compareOpposingAtlasEvidence(project, claim.id);
+    if (flags.length) {
+      lines.push("### Comparability follow-up prompts", "");
+      for (const flag of flags) {
+        lines.push("- " + plain(flag.explanation) + " [" + flag.kinds.join(", ") + "]", "");
+      }
+    }
+  }
+  lines.push(
+    "## Reproducibility limits",
+    "",
+    "- DOI registry records confirm bibliographic identity, not research findings.",
+    "- Study classification, bias notes, outcome definitions and effect estimates require independent checking against original source text.",
+    "- Only sources saved in this local project are represented; findings are not a field-wide consensus.",
+    "- Retraction flags must be rechecked against publisher and registry updates.",
+    "- This appendix does not authorize publication of third-party copyrighted text.",
+    ""
+  );
+  return lines.join("\n");
+}
