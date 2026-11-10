@@ -115,3 +115,27 @@
 .two{grid-template-columns:1fr}
 .countGrid{grid-template-columns:repeat(2,1fr)}
 }
+
+
+/* Evidence-gap audit: visually distinct from validated research findings. */
+.gapSummary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:20px 0 24px}
+.gapSummary div{display:flex;flex-direction:column;gap:8px;padding:17px;background:#152e44;border-radius:13px;border:1px solid #325773}
+.gapSummary strong{font-size:23px;color:#a5f7e0}
+.gapSummary span{color:#a9c1d7;font-size:12px}
+.gapGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:15px}
+.gapCard{border:1px solid #34536a;border-radius:14px;background:#0e2034;padding:20px;min-width:0}
+.gapCardHeading{display:flex;gap:8px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+.gapKind,.gapPriority{font-size:11px;text-transform:uppercase;letter-spacing:.07em;padding:5px 8px;border-radius:6px}
+.gapKind{color:#a1dafa;background:#183b50}
+.gapPriority{color:#f1d7a8;border:1px solid #766040}
+.gapCard h3{font-size:18px;line-height:1.4;margin:14px 0 9px}
+.gapCard p{font-size:13px;line-height:1.65;color:#c4d4e4;overflow-wrap:anywhere}
+.gapCard strong{display:block;font-size:12px;color:#99f1d4;margin-top:14px}
+.gapCard small{display:block;color:#89a7c0;margin-top:16px;line-height:1.6}
+.gapInspect{border:1px solid #5cbbad;color:#a1f5db;background:#1a4047;padding:8px 12px;border-radius:9px;margin-top:8px}
+.gapInspect:hover{background:#26585e}
+.gapSources,.gapCaveats{margin-top:16px;color:#b5cde0;font-size:13px;line-height:1.6}
+.gapSources summary,.gapCaveats summary{cursor:pointer;color:#86d7ec;font-weight:700}
+.gapSources li,.gapCaveats li{margin:8px 0;overflow-wrap:anywhere}
+.gapCaveats{padding:16px;background:#172a3d;border-radius:11px}
+@media(max-width:900px){.gapGrid{grid-template-columns:1fr}.gapSummary{grid-template-columns:repeat(2,minmax(0,1fr))}}
