@@ -20,7 +20,7 @@ import { analyzeAtlasGaps, renderAtlasGapReport } from "@/packages/evidence-atla
 import { approveGroundedProposal, proposeAbstractClaims, type ClaimProposal } from "@/packages/evidence-atlas-core/src/claim-proposals";
 import {
   assessAppraisalReadiness, compareOpposingAtlasEvidence, recordMethodAppraisal,
-  type AtlasMethodAppraisalInput,
+  type AtlasMethodAppraisalInput, renderMethodAppraisalReport,
 } from "@/packages/evidence-atlas-core/src/method-appraisal";
 import EvidenceMethodAppraisalEditor from "./EvidenceMethodAppraisalEditor";
 import styles from "./evidence-atlas.module.css";
@@ -119,6 +119,18 @@ function exportProject(project: AtlasProject) {
   document.body.appendChild(link);
   link.click();
   link.remove();
+  URL.revokeObjectURL(url);
+}
+function downloadMethodReport(project: AtlasProject) {
+  const content = renderMethodAppraisalReport(project);
+  const blob = new Blob([content], { type: "text/markdown;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement("a");
+  anchor.href = url;
+  anchor.download = "evidence-atlas-methods-review-" + project.id.slice(0, 8) + ".md";
+  document.body.appendChild(anchor);
+  anchor.click();
+  anchor.remove();
   URL.revokeObjectURL(url);
 }
 function downloadGapAudit(project: AtlasProject) {
@@ -388,6 +400,7 @@ export default function EvidenceAtlasClient() {
             <div><span className={styles.eyebrow}>ACTIVE RESEARCH PROJECT</span><h2>{project.title}</h2><p>{project.question}</p></div>
             <div className={styles.projectActions}>
               <button type="button" className={styles.secondary} onClick={() => exportProject(project)}>Export JSON backup</button>
+              <button type="button" className={styles.secondary} onClick={() => downloadMethodReport(project)}>Export methods review (.md)</button>
               <button type="button" className={styles.secondary} onClick={() => upload.current?.click()}>Import project</button>
               <input ref={upload} className={styles.hidden} type="file" accept=".json,application/json" onChange={importBackup} aria-label="Import Evidence Atlas JSON backup" />
               <button type="button" className={styles.danger} onClick={() => {
