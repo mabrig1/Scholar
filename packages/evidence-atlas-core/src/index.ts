@@ -19,7 +19,22 @@ export type AtlasPaper = {
   verification: "crossref" | "crossref-openalex";
   retracted: boolean;
 };
-export type AtlasClaim = { id: string; text: string; createdAt: string };
+export type AtlasClaimOrigin = {
+  paperId: string;
+  doi: string;
+  excerpt: string;
+  locator: "Abstract";
+  start: number;
+  end: number;
+  reviewStatus: "proposal-approved";
+};
+export type AtlasClaim = {
+  id: string;
+  text: string;
+  createdAt: string;
+  /** Optional, human-approved exact abstract passage; NOT reviewed evidence. */
+  origin?: AtlasClaimOrigin;
+};
 export type AtlasEvidence = {
   id: string;
   claimId: string;
@@ -198,6 +213,20 @@ export function parseAtlasProject(raw: unknown): AtlasProject {
   }
   const claimIds = new Set(base.claims.map((c) => c.id));
   const paperIds = new Set(base.papers.map((p) => p.id));
+  const papersById = new Map(base.papers.map((p) => [p.id, p]));
+  if (!base.claims.every((c) => {
+    if (c.origin === undefined) return true;
+    const o = c.origin;
+    const paper = papersById.get(o.paperId);
+    return Boolean(paper) && o.doi === paper?.doi &&
+      o.locator === "Abstract" && o.reviewStatus === "proposal-approved" &&
+      Number.isInteger(o.start) && Number.isInteger(o.end) && o.start >= 0 &&
+      o.end > o.start && o.end <= (paper?.abstract.length || 0) &&
+      o.excerpt === paper?.abstract.slice(o.start, o.end) &&
+      o.excerpt === c.text && o.excerpt.length >= 35 && o.excerpt.length <= 450;
+  })) {
+    throw new Error("The project contains invalid or tampered claim-proposal origins.");
+  }
   if (claimIds.size !== base.claims.length || paperIds.size !== base.papers.length) {
     throw new Error("The project contains duplicate identifiers.");
   }
