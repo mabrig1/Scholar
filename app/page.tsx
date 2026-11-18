@@ -1,5 +1,12 @@
 const workspaces = [
   {
+    eyebrow: "PHARMAOS",
+    title: "Agentic Computational Drug Discovery Network",
+    description: "Import reproducible research results from NcheSent, inspect compound evidence, launch DOI-verification missions and prepare a scientifically qualified publication pathway.",
+    href: "/pharmaos",
+    action: "Import PharmaOS research",
+  },
+  {
     eyebrow: "EVIDENCE",
     title: "MABRIG Evidence Atlas",
     description: "Discover DOI-backed literature, connect research claims to reviewed source excerpts, explore disagreements and export a reproducible evidence map.",
