@@ -19,6 +19,7 @@ The `/research-agent` workspace adds an auditable multi-agent research flow: Mis
 | Route | Purpose |
 | --- | --- |
 | `/` | Unified Researcher Pro landing page |
+| `/manuscript-review` | Eight-area manuscript screening and opt-in AI review, source-linked comments, editor overview, revision checklist and Word/Markdown/JSON export |
 | `/workspace` | Persistent browser-based manuscript profile and guided workflow |
 | `/research-agent` | Agentic Research OS for multi-step planning, DOI-backed discovery, OpenAlex verification, evidence scoring, grounded synthesis and critique |
 | `/academic-indexing-agent` | Public step-by-step Google Scholar indexing-readiness agent for identity, metadata, rights-safe hosting, crawl discovery, Highwire tags and verification |
@@ -99,3 +100,7 @@ npm run build
 ## Licence
 
 Private commercial product. Copyright Mabrig Technologies.
+
+## Manuscript Review Studio
+
+See [the review workflow and limits](docs/MANUSCRIPT_REVIEW.md). Basic screening is browser-local and needs no provider. AI review reuses the existing configured AI provider fallback only after explicit consent. No new secrets or database migration are required.
