@@ -96,6 +96,7 @@ export default function WorkspaceClient() {
             <span className="badge">CONTINUE</span>
             <h2>Choose the next action</h2>
             <button type="button" onClick={() => continueTo("/research-agent")}><strong>Run an agentic research mission</strong><small>Coordinate discovery, evidence verification, synthesis, critique and the next specialist handoff.</small></button>
+            <button type="button" onClick={() => continueTo("/manuscript-review")}><strong>Review your manuscript</strong><small>Eight review areas, evidence-linked findings and a revision checklist. Load your saved abstract in the studio or import the full text.</small></button>
             <button type="button" onClick={() => continueTo("/humanizer")}><strong>Humanize thesis writing</strong><small>Improve clarity while protecting evidence and structure.</small></button>
             <button type="button" onClick={() => continueTo("/chapter-two")}><strong>Build the Chapter Two review</strong><small>Find verified articles and synthesize the literature.</small></button>
             <button type="button" onClick={() => continueTo("/chapter-four")}><strong>Analyze Chapter Four data</strong><small>Generate tables, tests and editable interpretations.</small></button>

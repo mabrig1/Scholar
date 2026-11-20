@@ -3,7 +3,7 @@ import { getRepositorySitemapEntries } from "@/lib/open-repository-store";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const base = (process.env.NEXT_PUBLIC_APP_URL || "https://scholar.mabrigkorie.org").replace(/\/$/, "");
-  const paths = ["", "/workspace", "/research-agent", "/academic-indexing-agent", "/repository", "/humanizer", "/chapter-two", "/chapter-four", "/formatter", "/publishing-agent", "/free-journals", "/scopus-journals", "/academic-support", "/academic-printing", "/pricing", "/trust", "/privacy", "/terms", "/track"];
+  const paths = ["", "/workspace", "/research-agent", "/manuscript-review", "/academic-indexing-agent", "/repository", "/humanizer", "/chapter-two", "/chapter-four", "/formatter", "/publishing-agent", "/free-journals", "/scopus-journals", "/academic-support", "/academic-printing", "/pricing", "/trust", "/privacy", "/terms", "/track"];
 
   const staticEntries: MetadataRoute.Sitemap = paths.map((path) => ({
     url: base + path,
